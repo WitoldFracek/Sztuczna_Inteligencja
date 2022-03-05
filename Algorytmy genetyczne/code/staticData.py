@@ -6,7 +6,7 @@ FLAT = 'flat'
 HARD = 'hard'
 
 # Set exercise mode
-MODE = EASY
+MODE = HARD
 
 COST_PATH = f'../data/{MODE}_cost.json'
 FLOW_PATH = f'../data/{MODE}_flow.json'
@@ -17,6 +17,7 @@ class StaticData:
         self.cost_matrix = np.zeros((1, 1))
         self.flow_matrix = np.zeros((1, 1))
         self.value_matrix = np.zeros((1, 1))
+        self.machine_count = 0
 
     def __get_list(self, path):
         with open(path, encoding='utf-8') as file:
@@ -34,6 +35,7 @@ class StaticData:
         costs = self.__get_list(COST_PATH)
         flows = self.__get_list(FLOW_PATH)
         count = self.__check_machine_count(costs) + 1
+        self.machine_count = count
         self.cost_matrix = np.zeros((count, count), dtype=np.int64)
         self.flow_matrix = np.zeros((count, count), dtype=np.int64)
         self.__assign_cost(costs)
