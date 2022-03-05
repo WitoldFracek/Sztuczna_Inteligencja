@@ -1,23 +1,29 @@
 import numpy as np
 import json
 
-EASY = 'easy'
-FLAT = 'flat'
-HARD = 'hard'
-
-# Set exercise mode
-MODE = HARD
-
-COST_PATH = f'../data/{MODE}_cost.json'
-FLOW_PATH = f'../data/{MODE}_flow.json'
+# EASY = 'easy'
+# FLAT = 'flat'
+# HARD = 'hard'
+# EASY_SIZE = (3, 3)
+# FLAT_SIZE = (1, 12)
+# HARD_SIZE = (4, 5)
+#
+# # Set exercise mode
+# MODE = EASY
+# MODE_SIZE = EASY_SIZE
+#
+# COST_PATH = f'../data/{MODE}_cost.json'
+# FLOW_PATH = f'../data/{MODE}_flow.json'
 
 
 class StaticData:
-    def __init__(self):
+    def __init__(self, mode):
         self.cost_matrix = np.zeros((1, 1))
         self.flow_matrix = np.zeros((1, 1))
         self.value_matrix = np.zeros((1, 1))
         self.machine_count = 0
+        self.COST_PATH = f'../data/{mode}_cost.json'
+        self.FLOW_PATH = f'../data/{mode}_flow.json'
 
     def __get_list(self, path):
         with open(path, encoding='utf-8') as file:
@@ -32,8 +38,8 @@ class StaticData:
         return max(machine_list)
 
     def prepare_matrices(self):
-        costs = self.__get_list(COST_PATH)
-        flows = self.__get_list(FLOW_PATH)
+        costs = self.__get_list(self.COST_PATH)
+        flows = self.__get_list(self.FLOW_PATH)
         count = self.__check_machine_count(costs) + 1
         self.machine_count = count
         self.cost_matrix = np.zeros((count, count), dtype=np.int64)

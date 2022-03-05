@@ -1,11 +1,16 @@
 import numpy as np
-from staticData import StaticData, COST_PATH, FLOW_PATH
+from staticData import StaticData
 from factoryPlacement import generate_random_positions, FactoryIndividual
+from population import Population
 
 
 if __name__ == '__main__':
-    fi = FactoryIndividual(3)
-    fi.random_start()
+    pop = Population(2)
+    xs = pop.get_adaptations()
+    for ind, a in zip(pop.individuals, xs):
+        print(ind.grid)
+        print(a)
+        print()
 
 
 
