@@ -9,8 +9,8 @@ if __name__ == '__main__':
     pop = Population(20)
     xs = pop.get_adaptations()
     best = pop.best_individuals(5)
-    # print(xs)
-    # print(best)
+    print(xs)
+    print(best)
 
 
 
