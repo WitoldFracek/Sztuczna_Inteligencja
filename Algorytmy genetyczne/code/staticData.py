@@ -1,20 +1,6 @@
 import numpy as np
 import json
 
-# EASY = 'easy'
-# FLAT = 'flat'
-# HARD = 'hard'
-# EASY_SIZE = (3, 3)
-# FLAT_SIZE = (1, 12)
-# HARD_SIZE = (4, 5)
-#
-# # Set exercise mode
-# MODE = EASY
-# MODE_SIZE = EASY_SIZE
-#
-# COST_PATH = f'../data/{MODE}_cost.json'
-# FLOW_PATH = f'../data/{MODE}_flow.json'
-
 
 class StaticData:
     def __init__(self, mode, autoprepare=False):
@@ -67,3 +53,7 @@ class StaticData:
     @property
     def machine_count(self):
         return self.__machine_count
+
+    # debug
+    def debug(self):
+        print(self.value_matrix)

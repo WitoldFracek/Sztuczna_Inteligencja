@@ -7,11 +7,11 @@ FLAT = 'flat'
 HARD = 'hard'
 EASY_SIZE = (3, 3)
 FLAT_SIZE = (1, 12)
-HARD_SIZE = (4, 5)
+HARD_SIZE = (5, 6)
 
 # Set exercise mode
-MODE = EASY
-MODE_SIZE = EASY_SIZE
+MODE = HARD
+MODE_SIZE = HARD_SIZE
 
 
 class Population:
@@ -22,13 +22,14 @@ class Population:
         for _ in range(size):
             ind = FactoryIndividual(self.__data.machine_count, MODE_SIZE)
             ind.random_start()
+            #ind.ordered_start()
             self.__individuals.append(ind)
 
-    def get_adaptations(self):
-        return [ind.adaptation(self.__data.value_matrix) for ind in self.__individuals]
+    def fitting(self):
+        return [ind.fitting(self.__data.value_matrix) for ind in self.__individuals]
 
     def best_individuals(self, count=-1):
-        adapt = self.get_adaptations()
+        adapt = self.fitting()
         sor = list(zip(adapt, self.__individuals))
         sor.sort(key=lambda pair: pair[0])
         ret = [a for a, _ in sor]
@@ -44,5 +45,10 @@ class Population:
     @property
     def individuals(self):
         return tuple(self.__individuals)
+
+    # temporaty public
+    def debug(self):
+        for elem in self.__individuals:
+            print(elem.grid)
 
 

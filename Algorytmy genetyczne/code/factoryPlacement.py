@@ -1,23 +1,17 @@
 import numpy as np
 import random
 
-# EASY_SIZE = (3, 3)
-# FLAT_SIZE = (1, 12)
-# HARD_SIZE = (4, 5)
-#
-# MODE_SIZE = EASY_SIZE
 
-
-def generate_random_positions(count, xszie, ysize):
+def generate_random_positions(count, xsize, ysize):
     positions = []
-    for i in range(xszie):
+    for i in range(xsize):
         for j in range(ysize):
             positions.append((i, j))
     random.shuffle(positions)
     return positions[:count]
 
 
-def count_distance(x1, y1, x2, y2):
+def calculate_distance(x1, y1, x2, y2):
     return abs(x1 - x2) + abs(y1 - y2)
 
 
@@ -36,19 +30,34 @@ class FactoryIndividual:
             self.__positions[i] = pos
             xpos, ypos = pos
             self.grid[xpos, ypos] = i
-        self.distance_matrix = self.__count_distances()
+        self.distance_matrix = self.__calculate_distances()
 
-    def __count_distances(self):
+    # def ordered_start(self):
+    #     self.grid = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+    #     self.__positions = {
+    #         0: (0, 0),
+    #         1: (0, 1),
+    #         2: (0, 2),
+    #         3: (1, 0),
+    #         4: (1, 1),
+    #         5: (1, 2),
+    #         6: (2, 0),
+    #         7: (2, 1),
+    #         8: (2, 2)
+    #     }
+    #     self.distance_matrix = self.__count_distances()
+
+    def __calculate_distances(self):
         ret = np.zeros((self.__machine_count, self.__machine_count), dtype=np.int64)
         for key_x in self.__positions:
             for key_y in self.__positions:
                 x1, y1 = self.__positions[key_x]
                 x2, y2 = self.__positions[key_y]
-                distance = count_distance(x1, y1, x2, y2)
+                distance = calculate_distance(x1, y1, x2, y2)
                 ret[key_x, key_y] = distance
         return ret
 
-    def adaptation(self, costs):
+    def fitting(self, costs):
         return np.sum(costs * self.distance_matrix)
 
     @property
