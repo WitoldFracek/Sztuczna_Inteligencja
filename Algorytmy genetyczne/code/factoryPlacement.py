@@ -1,14 +1,16 @@
 import numpy as np
+import itertools
 import random
 
 
 def generate_random_positions(count, xsize, ysize):
     positions = []
-    for i in range(xsize):
-        for j in range(ysize):
-            positions.append((i, j))
-    random.shuffle(positions)
-    return positions[:count]
+    x_indices = np.arange(0, xsize, step=1, dtype=np.int64)
+    Y_indices = np.arange(0, ysize, step=1, dtype=np.int64)
+    ret = np.array([x for x in itertools.product(np.arange(0, xsize, step=1, dtype=np.int64),
+                                                 np.arange(0, ysize, step=1, dtype=np.int64))])
+    np.random.shuffle(ret)
+    return ret[:count]
 
 
 def calculate_distance(x1, y1, x2, y2):

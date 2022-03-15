@@ -1,6 +1,7 @@
 from staticData import StaticData
 from factoryPlacement import FactoryIndividual
 import numpy as np
+import random
 
 EASY = 'easy'
 FLAT = 'flat'
@@ -12,6 +13,7 @@ HARD_SIZE = (5, 6)
 # Set exercise mode
 MODE = HARD
 MODE_SIZE = HARD_SIZE
+TOURNAMENT_SIZE = 0.2
 
 
 class Population:
@@ -27,6 +29,18 @@ class Population:
 
     def fitting(self):
         return [ind.fitting(self.__data.value_matrix) for ind in self.__individuals]
+
+    def tournament_selection(self):
+        count = int(len(self.__individuals) * TOURNAMENT_SIZE)
+        chosen = random.sample(self.__individuals, count)
+        pairs = list(zip([ind.fitting(self.__data.value_matrix) for ind in chosen], chosen))
+        pairs.sort(key=lambda x: x[0])
+        return pairs[0]
+
+    def roulette_selection(self):
+        fittings = self.fitting()
+        combined = sum(fittings)
+        spread = [fit / combined for fit in fittings]
 
     def best_individuals(self, count=-1):
         adapt = self.fitting()

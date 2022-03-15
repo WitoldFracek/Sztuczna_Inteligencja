@@ -8,11 +8,13 @@ import time
 
 if __name__ == '__main__':
     pop = Population(20)
-    start = time.time()
-    for _ in range(10000):
-        pop.fitting()
-    end = time.time()
-    print(end - start)
+    for _ in range(10):
+        print(pop.tournament_selection())
+    # start = time.time()
+    # for _ in range(10000):
+    #     pop.fitting()
+    # end = time.time()
+    # print(end - start)
 
 
 
