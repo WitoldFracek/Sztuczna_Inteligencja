@@ -25,6 +25,10 @@ class FactoryIndividual:
         self.__machine_count = machine_count
         self.distance_matrix = np.zeros((self.__machine_count, self.__machine_count), dtype=np.int64)
 
+    @classmethod
+    def make_empty(cls):
+        return cls(1, (1, 1))
+
     def random_start(self):
         x, y = self.grid.shape
         random_positions = generate_random_positions(self.__machine_count, x, y)
@@ -49,6 +53,9 @@ class FactoryIndividual:
     #     }
     #     self.distance_matrix = self.__count_distances()
 
+    def calculate_distances(self):
+        self.distance_matrix = self.__calculate_distances()
+
     def __calculate_distances(self):
         ret = np.zeros((self.__machine_count, self.__machine_count), dtype=np.int64)
         for key_x in self.__positions:
@@ -61,6 +68,55 @@ class FactoryIndividual:
 
     def fitting(self, costs):
         return np.sum(costs * self.distance_matrix)
+
+    def crossover(self, other, genes=1):
+        new_grid, new_positions = self.__get_new_trait(other, genes=genes)
+        new_grid, collisions, new_positions = self.__fill_if_possible(new_grid, new_positions)
+        x_empty, y_empty = np.where(new_grid == -1)
+        for i, v in enumerate(collisions):
+            new_grid[x_empty[i], y_empty[i]] = v
+            new_positions[v] = (x_empty[i], y_empty[i])
+        self.__positions = new_positions
+        self.grid = new_grid
+        # offspring = FactoryIndividual.make_empty()
+        # offspring.__machine_count = self.machine_count
+        # offspring.__positions = new_positions
+        # offspring.__MODE_SIZE = self.__MODE_SIZE
+        # offspring.grid = new_grid
+        return self
+
+    def __get_new_trait(self, other, genes=1):
+        grid = np.full(self.__MODE_SIZE, -1, dtype=np.int64)
+        other_keys = random.sample(list(other.__positions.keys()), genes)
+        pos = {}
+        for key in other_keys:
+            x, y = other.__positions[key]
+            grid[x, y] = key
+            pos[key] = (x, y)
+        return grid, pos
+
+    def __fill_if_possible(self, grid, positions):
+        collisions = set()
+        for key in self.__positions:
+            if key not in positions:
+                x, y = self.__positions[key]
+                if grid[x, y] == -1:
+                    grid[x, y] = key
+                    positions[key] = (x, y)
+                else:
+                    collisions.add(key)
+        return grid, collisions, positions
+
+    def mutate(self):
+        to_swap = random.sample(list(self.__positions.keys()), 2)
+        first = to_swap[0]
+        second = to_swap[1]
+        x1, y1 = self.__positions[first]
+        x2, y2 = self.__positions[second]
+        self.grid[x1, y1] = second
+        self.grid[x2, y2] = first
+        self.__positions[first] = (x2, y2)
+        self.__positions[second] = (x1, y1)
 
     @property
     def machine_count(self):
