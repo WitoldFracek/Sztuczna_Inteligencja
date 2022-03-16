@@ -69,6 +69,15 @@ class FactoryIndividual:
     def fitting(self, costs):
         return np.sum(costs * self.distance_matrix)
 
+    def clone(self):
+        cl = FactoryIndividual.make_empty()
+        cl.__positions = self.__positions.copy()
+        cl.grid = self.grid.copy()
+        cl.__machine_count = self.__machine_count
+        cl.__MODE_SIZE = self.__MODE_SIZE
+        cl.distance_matrix = self.distance_matrix.copy()
+        return cl
+
     def crossover(self, other, genes=1):
         new_grid, new_positions = self.__get_new_trait(other, genes=genes)
         new_grid, collisions, new_positions = self.__fill_if_possible(new_grid, new_positions)
@@ -76,14 +85,14 @@ class FactoryIndividual:
         for i, v in enumerate(collisions):
             new_grid[x_empty[i], y_empty[i]] = v
             new_positions[v] = (x_empty[i], y_empty[i])
-        self.__positions = new_positions
-        self.grid = new_grid
-        # offspring = FactoryIndividual.make_empty()
-        # offspring.__machine_count = self.machine_count
-        # offspring.__positions = new_positions
-        # offspring.__MODE_SIZE = self.__MODE_SIZE
-        # offspring.grid = new_grid
-        return self
+        crossed = FactoryIndividual.make_empty()
+        crossed.__positions = new_positions
+        crossed.grid = new_grid
+        crossed.__machine_count = self.__machine_count
+        crossed.__MODE_SIZE = self.__MODE_SIZE
+        # self.__positions = new_positions
+        # self.grid = new_grid
+        return crossed
 
     def __get_new_trait(self, other, genes=1):
         grid = np.full(self.__MODE_SIZE, -1, dtype=np.int64)
