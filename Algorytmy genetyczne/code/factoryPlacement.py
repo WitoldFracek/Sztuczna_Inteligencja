@@ -38,21 +38,6 @@ class FactoryIndividual:
             self.grid[xpos, ypos] = i
         self.distance_matrix = self.__calculate_distances()
 
-    # def ordered_start(self):
-    #     self.grid = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
-    #     self.__positions = {
-    #         0: (0, 0),
-    #         1: (0, 1),
-    #         2: (0, 2),
-    #         3: (1, 0),
-    #         4: (1, 1),
-    #         5: (1, 2),
-    #         6: (2, 0),
-    #         7: (2, 1),
-    #         8: (2, 2)
-    #     }
-    #     self.distance_matrix = self.__count_distances()
-
     def calculate_distances(self):
         self.distance_matrix = self.__calculate_distances()
 
@@ -78,8 +63,11 @@ class FactoryIndividual:
         cl.distance_matrix = self.distance_matrix.copy()
         return cl
 
-    def crossover(self, other, genes=1):
-        new_grid, new_positions = self.__get_new_trait(other, genes=genes)
+    def __mul__(self, other):
+        return self.crossover(other)
+
+    def crossover(self, other):
+        new_grid, new_positions = self.__get_new_trait(other)
         new_grid, collisions, new_positions = self.__fill_if_possible(new_grid, new_positions)
         x_empty, y_empty = np.where(new_grid == -1)
         for i, v in enumerate(collisions):
@@ -90,11 +78,10 @@ class FactoryIndividual:
         crossed.grid = new_grid
         crossed.__machine_count = self.__machine_count
         crossed.__MODE_SIZE = self.__MODE_SIZE
-        # self.__positions = new_positions
-        # self.grid = new_grid
         return crossed
 
-    def __get_new_trait(self, other, genes=1):
+    def __get_new_trait(self, other):
+        genes = random.randint(1, len(other.__positions))
         grid = np.full(self.__MODE_SIZE, -1, dtype=np.int64)
         other_keys = random.sample(list(other.__positions.keys()), genes)
         pos = {}
@@ -115,6 +102,9 @@ class FactoryIndividual:
                 else:
                     collisions.add(key)
         return grid, collisions, positions
+
+    def __invert__(self):
+        return self.mutate()
 
     def mutate(self):
         to_swap = random.sample(list(self.__positions.keys()), 2)

@@ -8,8 +8,8 @@ import matplotlib.pyplot as pyl
 
 
 if __name__ == '__main__':
-    pop = Population(4)
-    iterations = 10
+    pop = Population(30)
+    iterations = 500
     # xs = pop.individuals
     # for ind in xs:
     #     print(ind.grid)
@@ -40,7 +40,6 @@ if __name__ == '__main__':
         best.append(pop.best)
         worst.append(pop.worst)
         avg.append(pop.average)
-        pyl.plot()
     b, i = pop.best_individuals(1)[0]
     print(i.grid)
     print(f'Best: {b}')
