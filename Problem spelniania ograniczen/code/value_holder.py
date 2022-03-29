@@ -1,10 +1,11 @@
 
 
 class ValueHolder:
-    def __init__(self, value):
+    def __init__(self, value, domain):
         self.value = value
-        self.domain_checked = set()
+        self.domain = set(domain)
+        self.is_first = False
 
-    def __add__(self, domain_value):
-        self.domain_checked.add(domain_value)
+    def remove(self, domain_value):
+        self.domain.remove(domain_value)
 

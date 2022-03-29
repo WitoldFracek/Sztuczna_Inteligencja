@@ -9,7 +9,7 @@ def generate_binary_values(size: int):
 
 
 def generate_binary_domain(size):
-    return [(0, 1) for _ in range(size)]
+    return [(0, 1) for _ in range(size * size)]
 
 
 def select_where(select_list, predicate) -> list:
@@ -40,45 +40,41 @@ class BinaryPuzzle:
     def convert(self, index: int) -> tuple[int, int]:
         return index // self.__size, index % self.__size
 
-    def start(self):
-        pass
-
     def check_constraints(self, value, domain_value):
-        if not self.check_neighbours(value, domain_value, 0):
-            return False
-        if not self.check_neighbours(value, domain_value, 1):
+        if not self.check_neighbours(value, domain_value):
             return False
         if not self.check_ratio(value, domain_value):
             return False
         if not self.check_duplicate_lines():
             return False
+        return True
 
     def check_neighbours(self, value, domain_value):
-        if not self.__check_neighbour_in_row(value, domain_value):
+        if not self.__check_neighbour_by_axes(value, domain_value, 0):
             return False
-        if not self.__check_neighbour_in_column(value, domain_value):
+        if not self.__check_neighbour_by_axes(value, domain_value, 1):
             return False
         return True
 
-    def __check_neighbour_in_row(self, value, domain_value):
+    def __check_neighbour_by_axes(self, value, domain_value, axes):
         x, y = value
-        row = self.__grid[x, :]
-        left = row[max(0, y - 2):y]
-        right = row[y + 1:min(len(row), y + 3)]
+        line = self.__grid[x, :] if axes == 0 else self.__grid[:, y]
+        left = line[max(0, y - 2):y] if axes == 0 else line[max(0, x - 2):x]
+        right = line[y + 1:min(len(line), y + 3)] if axes == 0 else line[x + 1:min(len(line), x + 3)]
         if not self.__is_slice_correct(left, domain_value):
             return False
         if not self.__is_slice_correct(right, domain_value):
             return False
+        if not self.__are_attached_correct(left, right, domain_value):
+            return False
         return True
 
-    def __check_neighbour_in_column(self, value, domain_value):
-        x, y = value
-        column = self.__grid[:, y]
-        left = column[max(0, x - 2):x]
-        right = column[x + 1:min(len(column), x + 3)]
-        if not self.__is_slice_correct(left, domain_value):
-            return False
-        if not self.__is_slice_correct(right, domain_value):
+    def __are_attached_correct(self, left, right, domain_value):
+        if len(left) < 1 or len(right) < 1:
+            return True
+        if left[-1] == -1 or right[0] == -1:
+            return True
+        if left[-1] == domain_value and domain_value == right[0]:
             return False
         return True
 
@@ -162,25 +158,77 @@ class BinaryPuzzle:
     def grid(self):
         return self.__grid
 
+    @property
+    def values(self):
+        return self.__values
 
-def no_dup(lines):
-    for i, line in enumerate(lines):
-        for j, li in enumerate(lines):
-            if i != j:
-                if np.all(line == li):
-                    return False
-    return True
+    def test(self):
+        print(self.check_constraints((0, 1), 0))
+
+    def solve(self):
+        depth_index = 0
+        holders = self.__prepare_holders()
+        holders[0].is_first = True
+        solutions = []
+        return self.__iterate(holders)
+
+    def __prepare_holders(self):
+        holders = []
+        for i, value in enumerate(self.__values):
+            vh = ValueHolder(value, self.__domains[i])
+            holders.append(vh)
+        return holders
+
+    def __iterate(self, holders):
+        depth_index = 0
+        solutions = []
+        hv = holders[0]
+        # while depth_index < len(holders):
+        while len(hv.domain) != 0:
+            print(depth_index, len(solutions))
+            vh = holders[depth_index]
+            if len(vh.domain) == 0:
+                self.__rollback(vh)
+                depth_index -= 1
+            else:
+                domain_value = vh.domain.pop()
+                if self.check_constraints(vh.value, domain_value):
+                    self.__insert(vh, domain_value)
+                    depth_index += 1
+                    if depth_index == len(holders):
+                        solutions.append(self.__grid.copy())
+                        if len(hv.domain) == 0:
+                            self.__rollback(hv)
+                            depth_index -= 1
+        return solutions
 
 
-if __name__ == '__main__':
-    a = np.array([[1, 2, 3],
-                  [4, 5, 6],
-                  [7, 2, 3]])
+    def __insert(self, value_holder: ValueHolder, domain_value):
+        x, y = value_holder.value
+        self.__grid[x, y] = domain_value
 
-    xs = [a[0, :], a[1, :], a[2, :]]
-    print(no_dup(xs))
+    def __rollback(self, value_holder: ValueHolder):
+        value_holder.domain = {0, 1}
+        x, y = value_holder.value
+        self.__grid[x, y] = -1
 
-    # b = a.copy()
-    # b[2, 2] = -1
-    # print(np.all(b == a))
+    def check_if(self, value, domain_value, print_info=False):
+        x, y = value
+        temp = self.__grid[x, y]
+        self.__grid[x, y] = -1
+        correct_ratio = self.check_ratio(value, domain_value)
+        correct_neighbour = self.check_neighbours(value, domain_value)
+        check_unique = self.check_duplicate_lines()
+        self.__grid[x, y] = temp
+        if print_info:
+            print(f'Correct ratio 1 to 0: {correct_ratio}')
+            print(f'No triple values: {correct_neighbour}')
+            print(f'All columns and rows unique: {check_unique}')
+        return correct_ratio, correct_neighbour, check_unique
+
+
+
+
+
+
 

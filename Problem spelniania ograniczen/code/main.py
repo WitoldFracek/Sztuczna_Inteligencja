@@ -9,21 +9,11 @@ PATH_10x10 = '../data/binary_10x10'
 
 
 def main():
-    grid = np.array([[1, 0, 1, 0, 1, 0],
-                     [0, 1, 0, 0, 1, 1],
-                     [1, 0, 0, 1, 0, 1],
-                     [0, 1, 1, 0, 1, 0],
-                     [0, 0, 1, 1, 0, 1],
-                     [1, 1, 0, 1, 0, 0]], dtype=np.int8)
-    bp = BinaryPuzzle(6, grid=grid)
-    ok = check_whole_grid(bp)
-    # print(grid[:, 0])
-    for elem in ok:
-        print(elem)
-    # print(bp.check_ratio((0, 0), 0))
-    # print(bp.check_duplicate_lines())
-    # print(bp.check_neighbours((0, 0), 0, axes=0))
-    # print(bp.check_neighbours((0, 0), 0, axes=1))
+    bp = BinaryPuzzle(6)
+    bp.load_from_file(PATH_6x6)
+    xs = bp.solve()
+    print("Done")
+    print(xs)
 
 
 def check_whole_grid(puzzle: BinaryPuzzle):
