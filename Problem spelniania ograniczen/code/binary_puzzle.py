@@ -36,6 +36,11 @@ class BinaryPuzzle:
     def check_lines(self):
         rows = self.__grab_full_rows()
         columns = self.__grab_full_columns()
+        if not self.__no_duplicates(rows):
+            return False
+        if not self.__no_duplicates(columns):
+            return False
+        return True
 
     def __grab_full_rows(self):
         full_rows = []
@@ -51,17 +56,33 @@ class BinaryPuzzle:
                 full_columns.append(a[:, col_idx])
         return full_columns
 
+    def __no_duplicates(self, lines):
+        for i, line in enumerate(lines):
+            for j, li in enumerate(lines):
+                if i != j:
+                    if np.all(line == li):
+                        return False
+        return True
 
 
-def remove_first(l: list):
-    l.pop(0)
+def no_dup(lines):
+    for i, line in enumerate(lines):
+        for j, li in enumerate(lines):
+            if i != j:
+                if np.all(line == li):
+                    return False
+    return True
 
 
 if __name__ == '__main__':
     a = np.array([[1, 2, 3],
                   [4, 5, 6],
-                  [7, 8, 9]])
-    for i in range(a.shape[1]):
-        print(a[:, i])
-    print(a)
+                  [7, 2, 3]])
+
+    xs = [a[0, :], a[1, :], a[2, :]]
+    print(no_dup(xs))
+
+    # b = a.copy()
+    # b[2, 2] = -1
+    # print(np.all(b == a))
 
