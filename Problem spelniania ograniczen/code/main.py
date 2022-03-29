@@ -33,16 +33,15 @@ def check_whole_grid(puzzle: BinaryPuzzle):
         for j in range(y):
             store = puzzle.grid[i, j]
             puzzle.grid[i, j] = -1
-            print(store)
+            # print(store)
             tpl = (puzzle.check_ratio((i, j), store),
                    puzzle.check_duplicate_lines(),
-                   puzzle.check_neighbours((i, j), store, 0),
-                   puzzle.check_neighbours((i, j), store, 1),
+                   puzzle.check_neighbours((i, j), store),
                    (i, j))
             puzzle.grid[i, j] = store
             ret.append(tpl)
-            if i == 0 and j == 1:
-                return ret
+            # if i == 0 and j == 1:
+            #     return ret
     return ret
 
 

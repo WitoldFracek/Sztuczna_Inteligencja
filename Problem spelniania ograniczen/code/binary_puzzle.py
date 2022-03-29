@@ -53,16 +53,29 @@ class BinaryPuzzle:
         if not self.check_duplicate_lines():
             return False
 
-    def check_neighbours(self, value, domain_value, axes):
+    def check_neighbours(self, value, domain_value):
+        if not self.__check_neighbour_in_row(value, domain_value):
+            return False
+        if not self.__check_neighbour_in_column(value, domain_value):
+            return False
+        return True
+
+    def __check_neighbour_in_row(self, value, domain_value):
         x, y = value
-        print(f'x: {x}, y: {y}')
-        line = self.__grid[x, :] if axes == 0 else self.__grid[:, y]
-        print(f'line {line}')
-        left = line[max(0, x - 2):x] if axes == 0 else line[max(0, y - 2):y]
-        print(f'left {left}')
-        right = line[x+1:min(len(line), x + 3)] if axes == 0 else line[y+1:min(len(line), y + 3)]
-        print(f'right {right}')
-        print()
+        row = self.__grid[x, :]
+        left = row[max(0, y - 2):y]
+        right = row[y + 1:min(len(row), y + 3)]
+        if not self.__is_slice_correct(left, domain_value):
+            return False
+        if not self.__is_slice_correct(right, domain_value):
+            return False
+        return True
+
+    def __check_neighbour_in_column(self, value, domain_value):
+        x, y = value
+        column = self.__grid[:, y]
+        left = column[max(0, x - 2):x]
+        right = column[x + 1:min(len(column), x + 3)]
         if not self.__is_slice_correct(left, domain_value):
             return False
         if not self.__is_slice_correct(right, domain_value):
@@ -70,6 +83,8 @@ class BinaryPuzzle:
         return True
 
     def __is_slice_correct(self, sl: list, domain_value):
+        if len(sl) < 2:
+            return True
         if -1 in sl:
             return True
         if sum(sl) + domain_value == 0 or sum(sl) + domain_value == 3:
