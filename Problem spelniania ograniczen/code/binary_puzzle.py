@@ -35,8 +35,8 @@ class BinaryPuzzle:
             raise Exception(f"Given grid shape {grid.shape} is inconsistent with specified size ({size}).")
         else:
             self.__grid = grid
-        self.__values = generate_binary_values(size)
-        self.__domains = generate_binary_domain(size)
+        self.__values = values
+        self.__domains = domain
 
     def load_from_file(self, path, empty_field_marker='x'):
         grid = BinaryDataReader.read_file(path, self.__size, empty_field_marker=empty_field_marker)

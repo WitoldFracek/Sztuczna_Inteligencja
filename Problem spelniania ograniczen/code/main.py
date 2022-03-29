@@ -1,23 +1,32 @@
-from data_readers import BinaryDataReader
+from data_readers import BinaryDataReader, FutoshikiDataReader
 from binary_puzzle import BinaryPuzzle, generate_binary_domain, generate_binary_values
 import numpy as np
 
 # Binary
-PATH_2x2 = '../data/binary_2x2'
-PATH_4x4 = '../data/binary_4x4'
-PATH_6x6 = '../data/binary_6x6'
-PATH_8x8 = '../data/binary_8x8'
-PATH_10x10 = '../data/binary_10x10'
+BIN_2x2 = '../data/binary_2x2'
+BIN_4x4 = '../data/binary_4x4'
+BIN_6x6 = '../data/binary_6x6'
+BIN_8x8 = '../data/binary_8x8'
+BIN_10x10 = '../data/binary_10x10'
+
+# Futoshiki
+FUT_4x4 = '../data/futoshiki_4x4'
+
+SIZE = 10
 
 
-def main():
-    bp = BinaryPuzzle(10)
-    bp.load_from_file(PATH_10x10)
+def binary():
+    bp = BinaryPuzzle(SIZE, generate_binary_values(SIZE), generate_binary_domain(SIZE))
+    bp.load_from_file(BIN_10x10)
     solutions = bp.solve()
     print("Done")
     for solution in solutions:
         print(solution)
         print()
+
+
+def main():
+    FutoshikiDataReader.read_file(FUT_4x4, 4)
 
 
 def check_whole_grid(puzzle: BinaryPuzzle):
