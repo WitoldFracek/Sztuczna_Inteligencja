@@ -1,30 +1,73 @@
 import numpy as np
 import itertools
+from data_readers import BinaryDataReader
+from value_holder import ValueHolder
 
-
-def generate_binary_values(size):
+def generate_binary_values(size: int):
     return np.array([x for x in itertools.product(np.arange(0, size, step=1, dtype=np.int8),
                                                   np.arange(0, size, step=1, dtype=np.int8))])
 
 
 def generate_binary_domain(size):
-    return [[0, 1] for _ in range(size)]
+    return [(0, 1) for _ in range(size)]
+
+
+def select_where(select_list, predicate) -> list:
+    ret = []
+    for elem in select_list:
+        if predicate(elem):
+            ret.append(elem)
+    return ret
 
 
 class BinaryPuzzle:
-    def __init__(self, size):
+    def __init__(self, size, grid=None):
         self.__size = size
-        self.__grid = np.full((size, size), -1, dtype=np.int8)
+        if grid is None:
+            self.__grid = np.full((size, size), -1, dtype=np.int8)
+        elif grid.shape[0] != size or grid.shape[1] != size:
+            raise Exception(f"Given grid shape {grid.shape} is inconsistent with specified size ({size}).")
+        else:
+            self.__grid = grid
+        self.__values = generate_binary_values(size)
+        self.__domains = generate_binary_domain(size)
+
+    def load_from_file(self, path, empty_field_marker='x'):
+        grid = BinaryDataReader.read_file(path, self.__size, empty_field_marker=empty_field_marker)
+        self.__grid = grid
+        self.exclude_already_filled_fields()
+
+    def convert(self, index: int) -> tuple[int, int]:
+        return index // self.__size, index % self.__size
+
+    def start(self):
+        pass
+
+    def check_constraints(self, value, domain_value):
+        if not self.check_neighbours(value, domain_value, 0):
+            return False
+        if not self.check_neighbours(value, domain_value, 1):
+            return False
+        if not self.check_ratio(value, domain_value):
+            return False
+        if not self.check_duplicate_lines():
+            return False
 
     def check_neighbours(self, value, domain_value, axes):
         x, y = value
-        row = self.__grid[x, :] if axes == 0 else self.__grid[:, y]
-        left = row[max(0, x - 2):x] if axes == 0 else row[max(0, y - 2):y]
-        right = row[x:min(len(row), x + 2)] if axes == 0 else row[y:min(len(row), y + 2)]
+        print(f'x: {x}, y: {y}')
+        line = self.__grid[x, :] if axes == 0 else self.__grid[:, y]
+        print(f'line {line}')
+        left = line[max(0, x - 2):x] if axes == 0 else line[max(0, y - 2):y]
+        print(f'left {left}')
+        right = line[x+1:min(len(line), x + 3)] if axes == 0 else line[y+1:min(len(line), y + 3)]
+        print(f'right {right}')
+        print()
         if not self.__is_slice_correct(left, domain_value):
             return False
         if not self.__is_slice_correct(right, domain_value):
             return False
+        return True
 
     def __is_slice_correct(self, sl: list, domain_value):
         if -1 in sl:
@@ -33,7 +76,25 @@ class BinaryPuzzle:
             return False
         return True
 
-    def check_lines(self):
+    def check_ratio(self, value, domain_value):
+        x, y = value
+        row = self.__grid[x, :]
+        column = self.__grid[:, y]
+        if not self.__is_ratio_correct(row, domain_value):
+            return False
+        if not self.__is_ratio_correct(column, domain_value):
+            return False
+        return True
+
+    def __is_ratio_correct(self, line, domain_value):
+        ones = len(select_where(line, lambda x: x == 1))
+        zeros = len(select_where(line, lambda x: x == 0))
+        free_spots = len(line) - ones - zeros
+        ones += 1 if domain_value == 1 else 0
+        zeros += 1 if domain_value == 0 else 0
+        return abs(ones - zeros) <= free_spots
+
+    def check_duplicate_lines(self):
         rows = self.__grab_full_rows()
         columns = self.__grab_full_columns()
         if not self.__no_duplicates(rows):
@@ -45,15 +106,15 @@ class BinaryPuzzle:
     def __grab_full_rows(self):
         full_rows = []
         for row in self.__grid:
-            if not -1 in row:
+            if -1 not in row:
                 full_rows.append(row)
         return full_rows
 
     def __grab_full_columns(self):
         full_columns = []
         for col_idx in range(self.__grid.shape[1]):
-            if not -1 in a[:, col_idx]:
-                full_columns.append(a[:, col_idx])
+            if -1 not in self.__grid[:, col_idx]:
+                full_columns.append(self.__grid[:, col_idx])
         return full_columns
 
     def __no_duplicates(self, lines):
@@ -63,6 +124,28 @@ class BinaryPuzzle:
                     if np.all(line == li):
                         return False
         return True
+
+    def exclude_already_filled_fields(self):
+        filled_fields = self.find_filled_fields()
+        new_values = []
+        for value in self.__values:
+            x, y = value
+            if (x, y) not in filled_fields:
+                new_values.append([x, y])
+        self.__values = np.array(new_values, dtype=np.int8)
+
+    def find_filled_fields(self):
+        ret = set()
+        x, y = self.__grid.shape
+        for i in range(x):
+            for j in range(y):
+                if self.__grid[i, j] != -1:
+                    ret.add((i, j))
+        return ret
+
+    @property
+    def grid(self):
+        return self.__grid
 
 
 def no_dup(lines):
