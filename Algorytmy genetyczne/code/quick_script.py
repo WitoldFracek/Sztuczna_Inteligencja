@@ -1,75 +1,33 @@
-import numpy as np
-from staticData import StaticData
-from factoryPlacement import generate_random_positions, FactoryIndividual
-from population import Population
-import random
-import time
-import matplotlib.pyplot as pyl
+
+
+class Complex:
+    def __init__(self, r, i):
+        self.real = r
+        self.imag = i
+
+    def __str__(self):
+        return f'{self.real} + {self.imag}i'
+
+    def __add__(self, other):
+        pass
+
+    def __sub__(self, other):
+        pass
+
+
+def add(c1, c2):
+    real = c1.real + c2.real
+    imag = c1.imag + c2.imag
+    return Complex(real, imag)
 
 
 if __name__ == '__main__':
-    pop = Population(30)
-    iterations = 500
-    # xs = pop.individuals
-    # for ind in xs:
-    #     print(ind.grid)
-    #     print(ind.fitting(pop.data()))
-    #     print()
-    # for _ in range(iterations):
-    #     s = input("-->")
-    #     if s == 'exit':
-    #         break
-    #     pop.iterate()
-        # xs = pop.individuals
-        # for ind in xs:
-        #     print(ind.grid)
-        #     print(ind.fitting(pop.data()))
-        #     print()
-    xs = pop.fitting()
-    xs.sort()
-    print(xs)
-    best = []
-    worst = []
-    avg = []
-    axes = [i for i in range(iterations)]
-    for i in range(iterations):
-        pop.iterate()
-        # xs = pop.fitting()
-        # xs.sort()
-        # print(xs)
-        best.append(pop.best)
-        worst.append(pop.worst)
-        avg.append(pop.average)
-    b, i = pop.best_individuals(1)[0]
-    print(i.grid)
-    print(f'Best: {b}')
+    c1 = Complex(1, 0)
+    c2 = Complex(0, 1)
+    sum = add(c1, c2)
+    sum = c1 + c2
+    print(sum)
 
-    pyl.plot(axes, best, color='g')
-    pyl.plot(axes, worst, color='r')
-    pyl.plot(axes, avg, color='b')
-
-    pyl.show()
-    #
-    # xs = pop.fitting()
-    # xs.sort()
-    # print(xs)
-    # score, ind = pop.best_individuals(1)[0]
-    # print(score)
-    # print(ind.grid)
-
-
-
-
-
-    # for _ in range(10):
-    #     print('Tournament:', pop.tournament_selection().fitting(pop.data()))
-    #     print('Roulette:', pop.roulette_selection().fitting(pop.data()))
-    #     print()
-    # start = time.time()
-    # for _ in range(10000):
-    #     pop.fitting()
-    # end = time.time()
-    # print(end - start)
 
 
 
