@@ -1,19 +1,23 @@
 from data_readers import BinaryDataReader
-from binary_puzzle import BinaryPuzzle
+from binary_puzzle import BinaryPuzzle, generate_binary_domain, generate_binary_values
 import numpy as np
 
 # Binary
+PATH_2x2 = '../data/binary_2x2'
+PATH_4x4 = '../data/binary_4x4'
 PATH_6x6 = '../data/binary_6x6'
 PATH_8x8 = '../data/binary_8x8'
 PATH_10x10 = '../data/binary_10x10'
 
 
 def main():
-    bp = BinaryPuzzle(6)
-    bp.load_from_file(PATH_6x6)
-    xs = bp.solve()
+    bp = BinaryPuzzle(10)
+    bp.load_from_file(PATH_10x10)
+    solutions = bp.solve()
     print("Done")
-    print(xs)
+    for solution in solutions:
+        print(solution)
+        print()
 
 
 def check_whole_grid(puzzle: BinaryPuzzle):

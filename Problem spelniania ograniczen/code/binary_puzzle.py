@@ -3,6 +3,7 @@ import itertools
 from data_readers import BinaryDataReader
 from value_holder import ValueHolder
 
+
 def generate_binary_values(size: int):
     return np.array([x for x in itertools.product(np.arange(0, size, step=1, dtype=np.int8),
                                                   np.arange(0, size, step=1, dtype=np.int8))])
@@ -10,6 +11,11 @@ def generate_binary_values(size: int):
 
 def generate_binary_domain(size):
     return [(0, 1) for _ in range(size * size)]
+
+
+def pretty_binary_print(solution):
+    pass
+
 
 
 def select_where(select_list, predicate) -> list:
@@ -21,7 +27,7 @@ def select_where(select_list, predicate) -> list:
 
 
 class BinaryPuzzle:
-    def __init__(self, size, grid=None):
+    def __init__(self, size, values, domain, grid=None):
         self.__size = size
         if grid is None:
             self.__grid = np.full((size, size), -1, dtype=np.int8)
@@ -182,26 +188,24 @@ class BinaryPuzzle:
     def __iterate(self, holders):
         depth_index = 0
         solutions = []
-        hv = holders[0]
-        # while depth_index < len(holders):
-        while len(hv.domain) != 0:
-            print(depth_index, len(solutions))
-            vh = holders[depth_index]
-            if len(vh.domain) == 0:
-                self.__rollback(vh)
+        holder = holders[0]
+        while depth_index > -1:
+            if len(holder.domain) == 0:
+                self.__rollback(holder)
                 depth_index -= 1
             else:
-                domain_value = vh.domain.pop()
-                if self.check_constraints(vh.value, domain_value):
-                    self.__insert(vh, domain_value)
+                domain_value = holder.domain.pop()
+                if self.check_constraints(holder.value, domain_value):
+                    self.__insert(holder, domain_value)
                     depth_index += 1
                     if depth_index == len(holders):
                         solutions.append(self.__grid.copy())
-                        if len(hv.domain) == 0:
-                            self.__rollback(hv)
+                        if len(holder.domain) == 0:
+                            self.__rollback(holder)
                             depth_index -= 1
+                        depth_index -= 1
+            holder = holders[depth_index]
         return solutions
-
 
     def __insert(self, value_holder: ValueHolder, domain_value):
         x, y = value_holder.value
