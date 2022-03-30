@@ -141,27 +141,5 @@ class FutoshikiDataException(Exception):
         Exception.__init__(self, message)
 
 
-class Qlist:
-    def __init__(self, *args):
-        self.__list = list(args)
-
-    def append(self, *elements):
-        self.__list += list(elements)
-
-    def select(self, selection):
-        ret = Qlist()
-        for elem in self.__list:
-            ret.append(selection(elem))
-        return ret
-
-    def where(self, predicate):
-        ret = Qlist()
-        for elem in self.__list:
-            if predicate(elem):
-                ret.append(elem)
-        return ret
-
-    def __str__(self):
-        return f"Q: {str(self.__list)}"
 
 

@@ -1,5 +1,6 @@
 from data_readers import BinaryDataReader, FutoshikiDataReader
-from binary_puzzle import BinaryPuzzle, generate_binary_domain, generate_binary_values
+from binary_puzzle import BinaryPuzzle, generate_binary_domain, generate_grid_values, pretty_binary_print
+from futoshiki_puzzle import FutoshikiPuzzle, generate_futoshiki_domain, pretty_futoshiki_print
 import numpy as np
 
 # Binary
@@ -11,22 +12,47 @@ BIN_10x10 = '../data/binary_10x10'
 
 # Futoshiki
 FUT_4x4 = '../data/futoshiki_4x4'
+FUT_5x5 = '../data/futoshiki_5x5'
+FUT_6x6 = '../data/futoshiki_6x6'
 
-SIZE = 10
+BIN_SIZE = 10
+BIN_MODE = BIN_10x10
+
+FUT_SIZE = 4
+FUT_MODE = FUT_4x4
 
 
 def binary():
-    bp = BinaryPuzzle(SIZE, generate_binary_values(SIZE), generate_binary_domain(SIZE))
-    bp.load_from_file(BIN_10x10)
+    bp = BinaryPuzzle(BIN_SIZE, generate_grid_values(BIN_SIZE), generate_binary_domain(BIN_SIZE))
+    bp.load_from_file(BIN_MODE)
+    print('Start')
+    pretty_binary_print(bp.grid)
+    print()
     solutions = bp.solve()
-    print("Done")
+
+    print("Solutions:")
     for solution in solutions:
-        print(solution)
+        pretty_binary_print(solution)
         print()
 
 
+def futoshiki():
+    domain = generate_futoshiki_domain(FUT_SIZE)
+    values = generate_grid_values(FUT_SIZE)
+    fp = FutoshikiPuzzle(FUT_SIZE, values, domain)
+    fp.load_from_file(FUT_MODE)
+    print("Start")
+    pretty_futoshiki_print(fp.grid, fp.constraints)
+    print()
+    solutions = fp.solve()
+    print("Solutions:")
+    for solution in solutions:
+        pretty_futoshiki_print(solution, fp.constraints)
+
+
 def main():
-    FutoshikiDataReader.read_file(FUT_4x4, 4)
+    # futoshiki()
+    binary()
 
 
 def check_whole_grid(puzzle: BinaryPuzzle):

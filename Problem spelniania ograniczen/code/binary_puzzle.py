@@ -4,7 +4,7 @@ from data_readers import BinaryDataReader
 from value_holder import ValueHolder
 
 
-def generate_binary_values(size: int):
+def generate_grid_values(size: int):
     return np.array([x for x in itertools.product(np.arange(0, size, step=1, dtype=np.int8),
                                                   np.arange(0, size, step=1, dtype=np.int8))])
 
@@ -14,8 +14,11 @@ def generate_binary_domain(size):
 
 
 def pretty_binary_print(solution):
-    pass
-
+    for row in solution:
+        chars = [str(elem) for elem in row]
+        line = '| ' + ' | '.join(chars) + ' |'
+        line = line.replace('-1', ' ')
+        print(line)
 
 
 def select_where(select_list, predicate) -> list:
@@ -41,7 +44,7 @@ class BinaryPuzzle:
     def load_from_file(self, path, empty_field_marker='x'):
         grid = BinaryDataReader.read_file(path, self.__size, empty_field_marker=empty_field_marker)
         self.__grid = grid
-        self.exclude_already_filled_fields()
+        self.__exclude_already_filled_fields()
 
     def convert(self, index: int) -> tuple[int, int]:
         return index // self.__size, index % self.__size
@@ -142,8 +145,8 @@ class BinaryPuzzle:
                         return False
         return True
 
-    def exclude_already_filled_fields(self):
-        filled_fields = self.find_filled_fields()
+    def __exclude_already_filled_fields(self):
+        filled_fields = self.__find_filled_fields()
         new_values = []
         for value in self.__values:
             x, y = value
@@ -151,7 +154,7 @@ class BinaryPuzzle:
                 new_values.append([x, y])
         self.__values = np.array(new_values, dtype=np.int8)
 
-    def find_filled_fields(self):
+    def __find_filled_fields(self):
         ret = set()
         x, y = self.__grid.shape
         for i in range(x):
@@ -172,10 +175,8 @@ class BinaryPuzzle:
         print(self.check_constraints((0, 1), 0))
 
     def solve(self):
-        depth_index = 0
         holders = self.__prepare_holders()
         holders[0].is_first = True
-        solutions = []
         return self.__iterate(holders)
 
     def __prepare_holders(self):
