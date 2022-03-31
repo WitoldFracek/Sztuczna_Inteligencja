@@ -1,9 +1,9 @@
 import numpy as np
-from binary_puzzle import select_where
-from value_holder import ValueHolder
+from legacy.binary_puzzle import select_where
+from legacy.value_holder import ValueHolder
 from data_readers import FutoshikiDataReader
-import random
-import os
+
+
 # ograniczenie (x1, y1) (x2, y2) <-1, 0 1>
 
 

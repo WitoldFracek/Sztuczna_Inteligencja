@@ -65,7 +65,7 @@ class FutoshikiDataReader:
 
     @staticmethod
     def __fetch_values_data(value_lines, puzzle_size, empty_field_marker, empty_field_value):
-        ret = np.full((puzzle_size, puzzle_size), empty_field_value, dtype=np.int8)
+        ret = np.full((puzzle_size, puzzle_size), empty_field_value)
         for i, line in enumerate(value_lines):
             if len(line) // 2 + 1 != puzzle_size:
                 raise FutoshikiDataException(message=f"""

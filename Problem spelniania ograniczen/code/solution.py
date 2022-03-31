@@ -19,24 +19,24 @@ FUT_6x6 = '../data/futoshiki_6x6'
 BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
-FUT_SIZE = 6
-FUT_MODE = FUT_6x6
+FUT_SIZE = 4
+FUT_MODE = FUT_4x4
 
 FORWARD_CHECK = False
 
 
 def binary():
-
     mockup = BinaryDataReader.read_file(BIN_MODE, BIN_SIZE, empty_field_value=None)
 
     variables = generate_equal_domain_values(BIN_SIZE, [0, 1])
     constraints = [BinaryRatioConstraint(),
                    BinaryNeighbourConstraint(),
-                   UniqueRowsConstraint(),
-                   UniqueColumnsConstraint()]
+                   UniqueColumnsConstraint(),
+                   UniqueRowsConstraint()]
     solver = GridCSPSolver(variables, constraints)
     solver.exclude_variables(mockup)
 
+    pretty_binary_print(solver.grid, mockup)
     solutions = solver.solve(forward_check=FORWARD_CHECK)
     print("Sol:")
     for sol in solutions:
@@ -44,5 +44,15 @@ def binary():
         print()
 
 
+def futoshiki():
+    mockup, inequalities = FutoshikiDataReader.read_file(FUT_MODE, FUT_SIZE, empty_field_value=None)
+    print(inequalities)
+    variables = generate_equal_domain_values(FUT_SIZE, [1, 2, 3, 4])
+
+
 if __name__ == '__main__':
-    binary()
+    # binary()
+    # futoshiki()
+    a = None
+    b = 1
+    print(b == None)

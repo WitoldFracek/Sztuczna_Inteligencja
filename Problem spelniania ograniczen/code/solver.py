@@ -11,9 +11,9 @@ class CSPSolver:
 class GridCSPSolver(CSPSolver):
     def __init__(self, variables: list[Variable], constraints):
         self.__size = int(math.sqrt(len(variables)))
-        self.__grid = np.array(variables).reshape((self.__size, self.__size))
         self.__original_variables = copy.deepcopy(variables)
         self.__variables = copy.deepcopy(variables)
+        self.__grid = np.array(self.__variables).reshape((self.__size, self.__size))
         self.__constraints = constraints
 
     def solve(self, forward_check=False):
@@ -51,11 +51,11 @@ class GridCSPSolver(CSPSolver):
     def grid(self):
         return self.__grid
 
-    def exclude_variables(self, mockup: np.ndarray):
+    def exclude_variables(self, mockup: np.ndarray, empty_value_marker=None):
         new_variables = []
         for elem in self.__original_variables:
             x, y = elem.position
-            if mockup[x, y] is None:
+            if mockup[x, y] is None or mockup[x, y] == empty_value_marker:
                 var = copy.deepcopy(elem)
                 self.__grid[x, y] = var
                 new_variables.append(var)

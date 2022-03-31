@@ -6,7 +6,7 @@ class Constraint:
     def __init__(self):
         pass
 
-    def __call__(self, grid, variable: Variable, value) -> bool:
+    def __call__(self, grid, variable: Variable, value, **kwargs) -> bool:
         return False
 
 
@@ -15,7 +15,7 @@ class BinaryNeighbourConstraint(Constraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value):
+    def __call__(self, grid, variable: Variable, value, **kwargs):
         if not self.__check_neighbour_by_axes(grid, variable, value, 0):
             return False
         if not self.__check_neighbour_by_axes(grid, variable, value, 1):
@@ -59,7 +59,7 @@ class BinaryRatioConstraint(Constraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value) -> bool:
+    def __call__(self, grid, variable: Variable, value, **kwargs) -> bool:
         x, y = variable.position
         row = Qlist(*grid[x, :])
         column = Qlist(*grid[:, y])
@@ -97,7 +97,7 @@ class UniqueRowsConstraint(UniqueLinesConstraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value):
+    def __call__(self, grid, variable: Variable, value, **kwargs):
         rows = self.__grab_full_rows(grid)
         return self._no_dupicates(rows)
 
@@ -113,7 +113,7 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value):
+    def __call__(self, grid, variable: Variable, value, **kwargs):
         rows = self.__grab_full_columns(grid)
         return self._no_dupicates(rows)
 
@@ -124,3 +124,43 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
                 full_columns.append(grid[:, col_idx])
         return full_columns
 
+
+class UniqueLineElementsConstraint(Constraint):
+    def __init__(self, empty_field_value):
+        Constraint.__init__(self)
+        self.empty_field_value = empty_field_value
+
+
+class UniqueRowElementsConstraint(UniqueLineElementsConstraint):
+    def __init__(self, empty_field_value):
+        UniqueLineElementsConstraint.__init__(self, empty_field_value)
+
+    def __call__(self, grid, variable: Variable, value, **kwargs):
+        x, _ = variable.position
+        row = Qlist(*grid[x, :])
+        filled_values = row.where(lambda arg: arg != self.empty_field_value)
+        unique = set()
+        unique.update(filled_values)
+        return value not in unique
+
+
+class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
+    def __init__(self, empty_field_value):
+        UniqueLineElementsConstraint.__init__(self, empty_field_value)
+
+    def __call__(self, grid, variable: Variable, value, **kwargs):
+        _, y = variable.position
+        row = Qlist(*grid[:, y])
+        filled_values = row.where(lambda arg: arg != self.empty_field_value)
+        unique = set()
+        unique.update(filled_values)
+        return value not in unique
+
+
+class FutoshikiInequalitiesConstraint(Constraint):
+    def __init__(self, inequalities: list[((int, int), (int, int), int)]):
+        Constraint.__init__(self)
+        self.inequalities = Qlist(*inequalities)
+
+    def __call__(self, grid, variable: Variable, value, **kwargs):
+        pass
