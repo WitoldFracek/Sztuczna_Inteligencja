@@ -4,7 +4,7 @@ import typing
 class BinaryDataReader:
 
     @staticmethod
-    def read_file(path, puzzle_size, empty_field_marker='x'):
+    def read_file(path, puzzle_size, empty_field_marker='x', empty_field_value=-1):
         with open(path, encoding='utf-8') as file:
             lines = file.readlines()
         if len(lines) != puzzle_size:
@@ -14,7 +14,7 @@ class BinaryDataReader:
             Given puzzle size: {puzzle_size}
             Lines fetched: {len(lines)}
             """)
-        ret = np.full((puzzle_size, puzzle_size), -1, dtype=np.int8)
+        ret = np.full((puzzle_size, puzzle_size), empty_field_value)
         for i, line in enumerate(lines):
             line = line.strip()
             if len(line) != puzzle_size:
@@ -36,7 +36,9 @@ class BinaryDataException(Exception):
 class FutoshikiDataReader:
 
     @staticmethod
-    def read_file(path, puzzle_size, empty_field_marker='x', gt_marker='>', lt_marker='<', ignore_marker='-'):
+    def read_file(path, puzzle_size, empty_field_marker='x',
+                  gt_marker='>', lt_marker='<', ignore_marker='-',
+                  empty_field_value=0):
         with open(path, encoding='utf-8') as file:
             data = file.readlines()
         lines = [line.strip() for line in data]
@@ -56,14 +58,14 @@ class FutoshikiDataReader:
                                     Given puzzle size: {puzzle_size}
                                     Value lines fetched: {len(value_lines)} (one between each value line).
                                     """)
-        grid = FutoshikiDataReader.__fetch_values_data(value_lines, puzzle_size, empty_field_marker)
+        grid = FutoshikiDataReader.__fetch_values_data(value_lines, puzzle_size, empty_field_marker, empty_field_value)
         formatted = FutoshikiDataReader.__convert_to_2D_array(constraint_lines, value_lines, ignore_marker)
         con = FutoshikiDataReader.__find_constraints(formatted, lt_marker, gt_marker, ignore_marker)
         return grid, con
 
     @staticmethod
-    def __fetch_values_data(value_lines, puzzle_size, empty_field_marker):
-        ret = np.full((puzzle_size, puzzle_size), 0, dtype=np.int8)
+    def __fetch_values_data(value_lines, puzzle_size, empty_field_marker, empty_field_value):
+        ret = np.full((puzzle_size, puzzle_size), empty_field_value, dtype=np.int8)
         for i, line in enumerate(value_lines):
             if len(line) // 2 + 1 != puzzle_size:
                 raise FutoshikiDataException(message=f"""

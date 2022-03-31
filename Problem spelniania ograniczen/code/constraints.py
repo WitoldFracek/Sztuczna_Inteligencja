@@ -80,18 +80,26 @@ class BinaryRatioConstraint(Constraint):
         return abs(ones - zeros) <= free_spots
 
 
-class UniqueRowsConstraint(Constraint):
+class UniqueLinesConstraint(Constraint):
+    def __init__(self):
+        Constraint.__init__(self)
+
+    def _no_dupicates(self, lines):
+        for i, line in enumerate(lines):
+            for j, li in enumerate(lines):
+                if i != j:
+                    if np.all(line == li):
+                        return False
+        return True
+
+
+class UniqueRowsConstraint(UniqueLinesConstraint):
     def __init__(self):
         Constraint.__init__(self)
 
     def __call__(self, grid, variable: Variable, value):
         rows = self.__grab_full_rows(grid)
-        columns = self.__grab_full_columns(grid)
-        if not self.__no_dupicates(rows):
-            return False
-        if not self.__no_dupicates(columns):
-            return False
-        return True
+        return self._no_dupicates(rows)
 
     def __grab_full_rows(self, grid):
         full_rows = []
@@ -100,18 +108,19 @@ class UniqueRowsConstraint(Constraint):
                 full_rows.append(row)
         return full_rows
 
+
+class UniqueColumnsConstraint(UniqueLinesConstraint):
+    def __init__(self):
+        Constraint.__init__(self)
+
+    def __call__(self, grid, variable: Variable, value):
+        rows = self.__grab_full_columns(grid)
+        return self._no_dupicates(rows)
+
     def __grab_full_columns(self, grid):
         full_columns = []
         for col_idx in range(grid.shape[1]):
             if None not in grid[:, col_idx]:
                 full_columns.append(grid[:, col_idx])
         return full_columns
-
-    def __no_dupicates(self, lines):
-        for i, line in enumerate(lines):
-            for j, li in enumerate(lines):
-                if i != j:
-                    if np.all(line == li):
-                        return False
-        return True
 
