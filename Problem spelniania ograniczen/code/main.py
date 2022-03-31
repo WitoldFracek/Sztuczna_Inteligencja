@@ -46,8 +46,9 @@ def futoshiki():
     print()
     solutions = fp.solve()
     print("Solutions:")
-    for solution in solutions:
-        pretty_futoshiki_print(solution, fp.constraints)
+    print(f'Number of solutions: {len(solutions)}')
+    # for solution in solutions:
+    #     pretty_futoshiki_print(solution, fp.constraints)
 
 
 def main():

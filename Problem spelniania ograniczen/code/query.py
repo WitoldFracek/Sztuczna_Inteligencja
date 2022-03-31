@@ -18,7 +18,7 @@ class Qlist:
                 ret.append(elem)
         return ret
 
-    def order_by(self, value_accessor):
+    def order_by(self, value_accessor=lambda x: x):
         xs = self.__list
         xs.sort(key=value_accessor)
         return Qlist(*xs)
@@ -27,13 +27,13 @@ class Qlist:
         xs = self.__list[::-1]
         return Qlist(*xs)
 
-    def group_by(self, value_accessor):
+    def group_by(self, value_accessor=lambda arg: arg):
         unique = set()
         for elem in self.__list:
-            unique.add(elem)
+            unique.add(value_accessor(elem))
         ret = Qlist()
         for elem in unique:
-            temp = self.where(lambda x: x == elem)
+            temp = self.where(lambda x: value_accessor(x) == elem)
             ret.append(temp)
         return ret
 
@@ -45,6 +45,9 @@ class Qlist:
 
     def len(self):
         return len(self)
+
+    def __iter__(self):
+        return iter(self.__list)
 
     def __getitem__(self, item):
         if isinstance(item, int):
@@ -60,4 +63,7 @@ class Qlist:
 
 if __name__ == '__main__':
     ql = Qlist(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    print(ql.order_by(lambda x: random.random()))
+    print(ql
+          .where(lambda x: x > 4)
+          .select(lambda x: x ** 2)
+          .order_by(lambda x: random.random()))

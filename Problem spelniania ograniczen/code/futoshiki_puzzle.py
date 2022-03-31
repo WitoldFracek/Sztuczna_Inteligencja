@@ -174,11 +174,11 @@ class FutoshikiPuzzle:
         depth_index = 0
         solutions = []
         holder = holders[0]
-        loops = 0
+        # loops = 0
         while depth_index > -1:
-            loops += 1
-            if loops % 1_000_000 == 0:
-                pretty_futoshiki_print(self.__grid, self.__constraints)
+            # loops += 1
+            # if loops % 1_000_000 == 0:
+            #     pretty_futoshiki_print(self.__grid, self.__constraints)
             if len(holder.domain) == 0:
                 self.__rollback(holder)
                 depth_index -= 1
