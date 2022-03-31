@@ -52,6 +52,8 @@ class Variable:
         return ret
 
 
+
+
 if __name__ == '__main__':
     v1 = Variable((0, 0), [1, 2, 3])
     v2 = copy.copy(v1)

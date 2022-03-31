@@ -126,7 +126,7 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
 
 
 class UniqueLineElementsConstraint(Constraint):
-    def __init__(self, empty_field_value):
+    def __init__(self, empty_field_value=None):
         Constraint.__init__(self)
         self.empty_field_value = empty_field_value
 
@@ -158,9 +158,27 @@ class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
 
 
 class FutoshikiInequalitiesConstraint(Constraint):
-    def __init__(self, inequalities: list[((int, int), (int, int), int)]):
+    def __init__(self, inequalities: list[((int, int), (int, int), int)], empty_field_value=None):
         Constraint.__init__(self)
         self.inequalities = Qlist(*inequalities)
+        self.empty_field_value = empty_field_value
 
     def __call__(self, grid, variable: Variable, value, **kwargs):
-        pass
+        as_first_arg = self.inequalities.where(lambda x: x[0] == variable.position)
+        as_second_arg = self.inequalities.where(lambda x: x[1] == variable.position)
+        check_list = []
+
+    def __inequalities_as_first_arg(self, grid, value):
+        check_list = []
+        for _, (x, y), comp in self.inequalities:
+            if grid[x, y].value is None or grid[x, y].value == self.empty_field_value:
+                check_list.append(True)
+            elif comp == 1:
+                check_list.append(value > grid[x, y].value)
+            elif comp == -1:
+                check_list.append(value < grid[x, y].value)
+        return check_list
+
+    # def __ine
+
+

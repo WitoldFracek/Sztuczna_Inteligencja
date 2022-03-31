@@ -51,8 +51,6 @@ def futoshiki():
 
 
 if __name__ == '__main__':
-    # binary()
+    binary()
     # futoshiki()
-    a = None
-    b = 1
-    print(b == None)
+
