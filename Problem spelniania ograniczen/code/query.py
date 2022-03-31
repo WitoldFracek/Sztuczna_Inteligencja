@@ -64,6 +64,5 @@ class Qlist:
 if __name__ == '__main__':
     ql = Qlist(1, 7, 3, 6, 5, 4, 2)
     print(ql.where(lambda x: x < 5).select(lambda x: x ** 2).order_by(lambda x: x).reverse())
-    s = set()
-    s.update(ql)
+    s = {*ql}
     print(s)

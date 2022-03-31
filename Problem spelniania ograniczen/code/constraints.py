@@ -138,9 +138,8 @@ class UniqueRowElementsConstraint(UniqueLineElementsConstraint):
     def __call__(self, grid, variable: Variable, value, **kwargs):
         x, _ = variable.position
         row = Qlist(*grid[x, :])
-        filled_values = row.where(lambda arg: arg != self.empty_field_value)
-        unique = set()
-        unique.update(filled_values)
+        filled_values = row.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
+        unique = {*filled_values}
         return value not in unique
 
 
@@ -150,10 +149,9 @@ class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
 
     def __call__(self, grid, variable: Variable, value, **kwargs):
         _, y = variable.position
-        row = Qlist(*grid[:, y])
-        filled_values = row.where(lambda arg: arg != self.empty_field_value)
-        unique = set()
-        unique.update(filled_values)
+        column = Qlist(*grid[:, y])
+        filled_values = column.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
+        unique = {*filled_values}
         return value not in unique
 
 
@@ -166,19 +164,32 @@ class FutoshikiInequalitiesConstraint(Constraint):
     def __call__(self, grid, variable: Variable, value, **kwargs):
         as_first_arg = self.inequalities.where(lambda x: x[0] == variable.position)
         as_second_arg = self.inequalities.where(lambda x: x[1] == variable.position)
-        check_list = []
+        if not self.__inequalities_as_first_arg(grid, value, as_first_arg):
+            return False
+        if not self.__inequalities_as_second_arg(grid, value, as_second_arg):
+            return False
+        return True
 
-    def __inequalities_as_first_arg(self, grid, value):
+    def __inequalities_as_first_arg(self, grid, value, inq):
         check_list = []
-        for _, (x, y), comp in self.inequalities:
+        for _, (x, y), comp in inq:
             if grid[x, y].value is None or grid[x, y].value == self.empty_field_value:
                 check_list.append(True)
             elif comp == 1:
                 check_list.append(value > grid[x, y].value)
             elif comp == -1:
                 check_list.append(value < grid[x, y].value)
-        return check_list
+        return all(check_list)
 
-    # def __ine
+    def __inequalities_as_second_arg(self, grid, value, inq):
+        check_list = []
+        for (x, y), _, comp in inq:
+            if grid[x, y].value is None or grid[x, y].value == self.empty_field_value:
+                check_list.append(True)
+            elif comp == 1:
+                check_list.append(grid[x, y].value > value)
+            elif comp == -1:
+                check_list.append(grid[x, y].value < value)
+        return all(check_list)
 
 

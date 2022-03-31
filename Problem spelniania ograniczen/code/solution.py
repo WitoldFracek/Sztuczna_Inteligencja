@@ -2,7 +2,7 @@ from constraints import *
 from utils import *
 from solver import GridCSPSolver
 from data_readers import BinaryDataReader, FutoshikiDataReader
-from printers import pretty_binary_print
+from printers import pretty_binary_print, pretty_futoshiki_print
 
 # Binary
 BIN_2x2 = '../data/binary_2x2'
@@ -19,8 +19,8 @@ FUT_6x6 = '../data/futoshiki_6x6'
 BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
-FUT_SIZE = 4
-FUT_MODE = FUT_4x4
+FUT_SIZE = 6
+FUT_MODE = FUT_6x6
 
 FORWARD_CHECK = False
 
@@ -46,11 +46,22 @@ def binary():
 
 def futoshiki():
     mockup, inequalities = FutoshikiDataReader.read_file(FUT_MODE, FUT_SIZE, empty_field_value=None)
-    print(inequalities)
-    variables = generate_equal_domain_values(FUT_SIZE, [1, 2, 3, 4])
+    variables = generate_equal_domain_values(FUT_SIZE, [x + 1 for x in range(FUT_SIZE)])
+    constraints = [UniqueRowElementsConstraint(empty_field_value=None),
+                   UniqueColumnElementsConstraint(empty_field_value=None),
+                   FutoshikiInequalitiesConstraint(inequalities, empty_field_value=None)]
+    solver = GridCSPSolver(variables, constraints)
+    solver.exclude_variables(mockup)
+
+    pretty_futoshiki_print(solver.grid, inequalities, mockup)
+    print()
+    solutions = solver.solve(forward_check=FORWARD_CHECK)
+    for sol in solutions:
+        pretty_futoshiki_print(sol, inequalities, mockup)
+        print()
 
 
 if __name__ == '__main__':
-    binary()
-    # futoshiki()
+    # binary()
+    futoshiki()
 

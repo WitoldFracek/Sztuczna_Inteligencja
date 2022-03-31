@@ -4,7 +4,7 @@ from legacy.value_holder import ValueHolder
 from data_readers import FutoshikiDataReader
 
 
-# ograniczenie (x1, y1) (x2, y2) <-1, 0 1>
+# ograniczenie (x1, y1) (x2, y2) <-1, 0, 1>
 
 
 def pretty_futoshiki_print(solution, constraints):
