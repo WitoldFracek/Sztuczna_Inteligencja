@@ -62,8 +62,5 @@ class Qlist:
 
 
 if __name__ == '__main__':
-    ql = Qlist(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-    print(ql
-          .where(lambda x: x > 4)
-          .select(lambda x: x ** 2)
-          .order_by(lambda x: random.random()))
+    ql = Qlist(1, 7, 3, 6, 5, 4, 2)
+    print(ql.where(lambda x: x < 5).select(lambda x: x ** 2).order_by(lambda x: x).reverse())

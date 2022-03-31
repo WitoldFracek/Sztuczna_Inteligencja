@@ -34,11 +34,8 @@ class Variable:
 
 
 if __name__ == '__main__':
-    d = (1, 2, 3, 4)
-    s = {*d}
-    print(type(s))
-    for elem in s:
-        print(elem)
+    xs = [1, None, 1]
+    print(sum(xs))
 
 
 

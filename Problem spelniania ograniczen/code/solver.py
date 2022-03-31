@@ -4,7 +4,8 @@ from variable import Variable
 
 
 class CSPSolver:
-    pass
+    def solve(self):
+        pass
 
 
 class GridCSPSolver(CSPSolver):
@@ -23,9 +24,9 @@ class GridCSPSolver(CSPSolver):
                 self.__rollback(variable)
                 depth_index -= 1
             else:
-                domain_value = variable.available_values.pop()
-                if all([constraint(self.__grid, variable, domain_value) for constraint in self.__constraints]):
-                    variable.value = domain_value
+                value = variable.available_values.pop()
+                if all([constraint(self.__grid, variable, value) for constraint in self.__constraints]):
+                    variable.value = value
                     depth_index += 1
                     if forward_check:
                         pass
@@ -36,6 +37,7 @@ class GridCSPSolver(CSPSolver):
                             depth_index -= 1
                         depth_index -= 1
             variable = self.__variables[depth_index]
+        return solutions
 
     def __rollback(self, variable: Variable):
         variable.value = None
