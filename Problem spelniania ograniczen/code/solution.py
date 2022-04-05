@@ -19,8 +19,8 @@ FUT_6x6 = '../data/futoshiki_6x6'
 BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
-FUT_SIZE = 4
-FUT_MODE = FUT_4x4
+FUT_SIZE = 5
+FUT_MODE = FUT_5x5
 
 FORWARD_CHECK = True
 
@@ -63,6 +63,6 @@ def futoshiki():
 
 
 if __name__ == '__main__':
-    # binary()
-    futoshiki()
+    binary()
+    # futoshiki()
 

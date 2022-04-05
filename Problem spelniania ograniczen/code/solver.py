@@ -28,29 +28,31 @@ class GridCSPSolver(CSPSolver):
 
     def solve(self, forward_check=False):
         depth_index = 0
-        forward_is_ok = True
         solutions = []
-        variable: Variable = self.__variables[0]
-        while depth_index > -1:
+        variable: Variable = self.__take_next()
+        while variable is not None:  # depth_index > -1:
             if variable.all_checked:
                 self.__rollback(variable)
-                depth_index -= 1
-            elif forward_check and self.__check_forward_domains(depth_index):
-                self.__recover_forward_domains(depth_index)
+                variable = self.__take_previous()
+                # depth_index -= 1
+            elif forward_check and self.__check_forward_domains(variable.id):
+                self.__recover_forward_domains(variable.id)
                 variable.available_values.pop()
             else:
                 value = variable.available_values.pop()
                 if all([constraint(self.__grid, variable, value) for constraint in self.__constraints]):
                     variable.value = value
-                    depth_index += 1
-                    if depth_index == len(self.__variables):
+                    # depth_index += 1
+                    variable = self.__take_next(variable)
+                    if variable is None:  # depth_index == len(self.__variables):
                         solutions.append(copy.deepcopy(self.__grid))
-                        if variable.all_checked and forward_is_ok:
-                            forward_is_ok = True
+                        variable = self.__take_previous()
+                        if variable.all_checked:
                             self.__rollback(variable)
-                            depth_index -= 1
-                        depth_index -= 1
-            variable = self.__variables[depth_index]
+                            variable = self.__take_previous()
+                            # depth_index -= 1
+                        # depth_index -= 1
+            # variable = self.__variables[depth_index]
         return solutions
 
     def __rollback(self, variable: Variable):
@@ -89,20 +91,28 @@ class GridCSPSolver(CSPSolver):
         for variable in self.__variables[eliminator_index + 1:]:
             variable.recover_from_history(eliminator_id)
 
-    def __take_next(self):
+    def __take_next(self, current=None) -> Variable:
+        if current is not None:
+            self.__history.append(current)
         if self.__heuristic == CSPSolver.IN_ORDER:
             return self.__take_in_order()
+        ...
 
     def __take_previous(self):
-        prev = self.__history[-1]
-        self.__history = self.__history[:-1]
-        return prev
+        if self.__history:
+            prev = self.__history[-1]
+            self.__history = self.__history[:-1]
+            return prev
+        return None
 
     def __take_in_order(self):
-        return self.__not_set_variables()[0]
+        not_set = self.__not_set_variables()
+        if not_set:
+            return not_set[0]
+        return None
 
     def __not_set_variables(self) -> list[Variable]:
-        return Qlist(*self.__variables).where(lambda x: x.value == x.empty_field_value).to_list()
+        return Qlist(*self.__variables).where(lambda x: x.value is None).to_list()
 
 
 

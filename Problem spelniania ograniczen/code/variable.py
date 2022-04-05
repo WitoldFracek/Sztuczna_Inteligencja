@@ -43,7 +43,7 @@ class Variable:
         pass
 
     def __repr__(self):
-        return f'{self.empty_value_repr if self.value is None else self.value}'
+        return f'Var_{self.id}: {self.empty_value_repr if self.value is None else self.value}'
 
     def __eq__(self, other) -> bool:
         if self.__identifier == other.id:
