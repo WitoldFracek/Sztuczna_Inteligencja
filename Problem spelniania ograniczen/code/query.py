@@ -37,6 +37,9 @@ class Qlist:
             ret.append(temp)
         return ret
 
+    def to_list(self) -> list:
+        return self.__list
+
     def sum(self):
         return sum(self.__list)
 

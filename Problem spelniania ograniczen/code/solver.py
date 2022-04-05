@@ -8,17 +8,23 @@ from query import Qlist
 
 
 class CSPSolver:
+
+    # Heuristics:
+    IN_ORDER = 'in order'
+
     def solve(self):
         pass
 
 
 class GridCSPSolver(CSPSolver):
-    def __init__(self, variables: list[Variable], constraints: list[Constraint]):
+    def __init__(self, variables: list[Variable], constraints: list[Constraint], heuristic='in order'):
         self.__size = int(math.sqrt(len(variables)))
         self.__original_variables = copy.deepcopy(variables)
         self.__variables = copy.deepcopy(variables)
         self.__grid = np.array(self.__variables).reshape((self.__size, self.__size))
         self.__constraints = constraints
+        self.__heuristic = heuristic
+        self.__history = []
 
     def solve(self, forward_check=False):
         depth_index = 0
@@ -82,6 +88,21 @@ class GridCSPSolver(CSPSolver):
         eliminator_id = self.__variables[eliminator_index].id
         for variable in self.__variables[eliminator_index + 1:]:
             variable.recover_from_history(eliminator_id)
+
+    def __take_next(self):
+        if self.__heuristic == CSPSolver.IN_ORDER:
+            return self.__take_in_order()
+
+    def __take_previous(self):
+        prev = self.__history[-1]
+        self.__history = self.__history[:-1]
+        return prev
+
+    def __take_in_order(self):
+        return self.__not_set_variables()[0]
+
+    def __not_set_variables(self) -> list[Variable]:
+        return Qlist(*self.__variables).where(lambda x: x.value == x.empty_field_value).to_list()
 
 
 

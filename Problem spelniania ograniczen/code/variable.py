@@ -45,6 +45,13 @@ class Variable:
     def __repr__(self):
         return f'{self.empty_value_repr if self.value is None else self.value}'
 
+    def __eq__(self, other) -> bool:
+        if self.__identifier == other.id:
+            return True
+        elif self.position == other.position:
+            return True
+        return False
+
     def __deepcopy__(self, memo):
         cls = self.__class__
         ret = cls.__new__(cls)

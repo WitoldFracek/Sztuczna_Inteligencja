@@ -10,6 +10,9 @@ class Constraint:
     def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> bool:
         return False
 
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        return 0
+
 
 class BinaryNeighbourConstraint(Constraint):
     def __init__(self):
@@ -21,6 +24,14 @@ class BinaryNeighbourConstraint(Constraint):
         if not self.__check_neighbour_by_axes(grid, variable, value, 1):
             return False
         return True
+
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs):
+        unmet = 0
+        if not self.__check_neighbour_by_axes(grid, variable, value, 0):
+            unmet += 1
+        if not self.__check_neighbour_by_axes(grid, variable, value, 1):
+            unmet += 1
+        return unmet
 
     def __check_neighbour_by_axes(self, grid: np.ndarray, variable: Variable, value, axes) -> bool:
         x, y = variable.position
@@ -69,6 +80,17 @@ class BinaryRatioConstraint(Constraint):
             return False
         return True
 
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        x, y = variable.position
+        row = Qlist(*grid[x, :])
+        column = Qlist(*grid[:, y])
+        if not self.__is_ratio_correct(row, value):
+            unmet += 1
+        if not self.__is_ratio_correct(column, value):
+            unmet += 1
+        return unmet
+
     def __is_ratio_correct(self, line: Qlist, value) -> bool:
         ones = line.where(lambda x: x.value == 1).len()
         zeros = line.where(lambda x: x.value == 0).len()
@@ -101,6 +123,13 @@ class UniqueRowsConstraint(UniqueLinesConstraint):
         rows = self.__grab_full_rows(grid)
         return self._no_dupicates(rows)
 
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        rows = self.__grab_full_rows(grid)
+        if not self._no_dupicates(rows):
+            unmet += 1
+        return unmet
+
     def __grab_full_rows(self, grid):
         full_rows = []
         for row in grid:
@@ -116,6 +145,13 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
     def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         rows = self.__grab_full_columns(grid)
         return self._no_dupicates(rows)
+
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        rows = self.__grab_full_columns(grid)
+        if not self._no_dupicates(rows):
+            unmet += 1
+        return unmet
 
     def __grab_full_columns(self, grid):
         full_columns = []
@@ -138,9 +174,19 @@ class UniqueRowElementsConstraint(UniqueLineElementsConstraint):
     def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         x, _ = variable.position
         row = Qlist(*grid[x, :])
-        filled_values = row.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
+        filled_values = row.where(lambda arg: arg.value != self.empty_field_value).select(lambda arg: arg.value)
         unique = {*filled_values}
         return value not in unique
+
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        x, _ = variable.position
+        row = Qlist(*grid[x, :])
+        filled_values = row.where(lambda arg: arg.value != self.empty_field_value).select(lambda arg: arg.value)
+        unique = {*filled_values}
+        if value not in unique:
+            unmet += 1
+        return unmet
 
 
 class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
@@ -150,9 +196,19 @@ class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
     def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         _, y = variable.position
         column = Qlist(*grid[:, y])
-        filled_values = column.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
+        filled_values = column.where(lambda arg: arg.value != self.empty_field_value).select(lambda arg: arg.value)
         unique = {*filled_values}
         return value not in unique
+
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        _, y = variable.position
+        column = Qlist(*grid[:, y])
+        filled_values = column.where(lambda arg: arg.value != self.empty_field_value).select(lambda arg: arg.value)
+        unique = {*filled_values}
+        if value not in unique:
+            unmet += 1
+        return unmet
 
 
 class FutoshikiInequalitiesConstraint(Constraint):
@@ -169,6 +225,16 @@ class FutoshikiInequalitiesConstraint(Constraint):
         if not self.__inequalities_as_second_arg(grid, value, as_second_arg):
             return False
         return True
+
+    def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
+        unmet = 0
+        as_first_arg = self.inequalities.where(lambda x: x[0] == variable.position)
+        as_second_arg = self.inequalities.where(lambda x: x[1] == variable.position)
+        if not self.__inequalities_as_first_arg(grid, value, as_first_arg):
+            unmet += 1
+        if not self.__inequalities_as_second_arg(grid, value, as_second_arg):
+            unmet += 1
+        return unmet
 
     def __inequalities_as_first_arg(self, grid, value, inq):
         check_list = []
