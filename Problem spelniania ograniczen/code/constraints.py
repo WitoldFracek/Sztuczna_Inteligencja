@@ -2,27 +2,27 @@ from variable import Variable
 from query import Qlist
 import numpy as np
 
+
 class Constraint:
     def __init__(self):
         pass
 
-    def __call__(self, grid, variable: Variable, value, **kwargs) -> bool:
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> bool:
         return False
 
 
-# Binary Puzzle
 class BinaryNeighbourConstraint(Constraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         if not self.__check_neighbour_by_axes(grid, variable, value, 0):
             return False
         if not self.__check_neighbour_by_axes(grid, variable, value, 1):
             return False
         return True
 
-    def __check_neighbour_by_axes(self, grid, variable: Variable, value, axes) -> bool:
+    def __check_neighbour_by_axes(self, grid: np.ndarray, variable: Variable, value, axes) -> bool:
         x, y = variable.position
         line = grid[x, :] if axes == 0 else grid[:, y]
         left = line[max(0, y - 2):y] if axes == 0 else line[max(0, x - 2):x]
@@ -59,7 +59,7 @@ class BinaryRatioConstraint(Constraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs) -> bool:
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> bool:
         x, y = variable.position
         row = Qlist(*grid[x, :])
         column = Qlist(*grid[:, y])
@@ -97,7 +97,7 @@ class UniqueRowsConstraint(UniqueLinesConstraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         rows = self.__grab_full_rows(grid)
         return self._no_dupicates(rows)
 
@@ -113,7 +113,7 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
     def __init__(self):
         Constraint.__init__(self)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         rows = self.__grab_full_columns(grid)
         return self._no_dupicates(rows)
 
@@ -135,7 +135,7 @@ class UniqueRowElementsConstraint(UniqueLineElementsConstraint):
     def __init__(self, empty_field_value):
         UniqueLineElementsConstraint.__init__(self, empty_field_value)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         x, _ = variable.position
         row = Qlist(*grid[x, :])
         filled_values = row.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
@@ -147,7 +147,7 @@ class UniqueColumnElementsConstraint(UniqueLineElementsConstraint):
     def __init__(self, empty_field_value):
         UniqueLineElementsConstraint.__init__(self, empty_field_value)
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         _, y = variable.position
         column = Qlist(*grid[:, y])
         filled_values = column.where(lambda arg: arg != self.empty_field_value).select(lambda arg: arg.value)
@@ -161,7 +161,7 @@ class FutoshikiInequalitiesConstraint(Constraint):
         self.inequalities = Qlist(*inequalities)
         self.empty_field_value = empty_field_value
 
-    def __call__(self, grid, variable: Variable, value, **kwargs):
+    def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
         as_first_arg = self.inequalities.where(lambda x: x[0] == variable.position)
         as_second_arg = self.inequalities.where(lambda x: x[1] == variable.position)
         if not self.__inequalities_as_first_arg(grid, value, as_first_arg):

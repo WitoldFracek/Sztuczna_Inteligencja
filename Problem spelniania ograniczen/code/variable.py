@@ -1,4 +1,6 @@
 import copy
+# from constraints import Constraint
+import numpy as np
 
 
 class Variable:
@@ -51,7 +53,22 @@ class Variable:
             setattr(ret, k, copy.deepcopy(v))
         return ret
 
+    def eliminate(self, grid: np.ndarray, constraints: list[...], eliminator_id: int):
+        eliminated = set()
+        for value in self.__available_values:
+            if not self.__check_if_fits(grid, constraints, value):
+                eliminated.add(value)
+        for value in eliminated:
+            self.__available_values.remove(value)
+        self.modification_history[eliminator_id] = eliminated
 
+    def recover_from_history(self, eliminator_id: int):
+        rec = self.modification_history[eliminator_id]
+        self.__available_values.update(rec)
+        del self.modification_history[eliminator_id]
+
+    def __check_if_fits(self, grid: np.ndarray, constraints: list[...], value) -> bool:
+        return all([constraint(grid, self, value) for constraint in constraints])
 
 
 if __name__ == '__main__':

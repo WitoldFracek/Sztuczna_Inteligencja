@@ -22,7 +22,7 @@ BIN_MODE = BIN_10x10
 FUT_SIZE = 6
 FUT_MODE = FUT_6x6
 
-FORWARD_CHECK = False
+FORWARD_CHECK = True
 
 
 def binary():
@@ -38,7 +38,7 @@ def binary():
 
     pretty_binary_print(solver.grid, mockup)
     solutions = solver.solve(forward_check=FORWARD_CHECK)
-    print("Sol:")
+    print(f"Solutions: {len(solutions)}")
     for sol in solutions:
         pretty_binary_print(sol, mockup)
         print()
@@ -56,6 +56,7 @@ def futoshiki():
     pretty_futoshiki_print(solver.grid, inequalities, mockup)
     print()
     solutions = solver.solve(forward_check=FORWARD_CHECK)
+    print(f"Solutions: {len(solutions)}")
     for sol in solutions:
         pretty_futoshiki_print(sol, inequalities, mockup)
         print()

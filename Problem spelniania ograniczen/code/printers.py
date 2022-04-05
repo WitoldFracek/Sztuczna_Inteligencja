@@ -37,7 +37,7 @@ def pretty_futoshiki_print(solution: np.ndarray, inequalities, mockup=None, empt
                 ret[idx1][idx2] = '\x1b[0;30;47m < \x1b[0m'
         elif y1 == y2:
             if comp == 1:
-                ret[idx1][idx2] = '\x1b[0;30;47m V \x1b[0m'
+                ret[idx1][idx2] = '\x1b[0;30;47m v \x1b[0m'
             elif comp == -1:
                 ret[idx1][idx2] = '\x1b[0;30;47m ^ \x1b[0m'
     for row in ret:
