@@ -64,5 +64,6 @@ class Qlist:
 
 
 if __name__ == '__main__':
-    xs = [1, 2, 3]
-    print(xs[2:3])
+    my_list = Qlist(4, 2, 8, 1, 2, 9, 5)
+    res = my_list.select(lambda x: x * x).where(lambda x: x > 10).order_by(lambda x: x).reverse()
+    print(res)

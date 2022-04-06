@@ -3,6 +3,7 @@ from utils import *
 from solver import GridCSPSolver
 from data_readers import BinaryDataReader, FutoshikiDataReader
 from printers import pretty_binary_print, pretty_futoshiki_print
+from data_collector import DataCollector
 
 
 BIN_2x2 = '../data/binary_2x2'
@@ -20,8 +21,8 @@ BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
 # Futoshiki:
-FUT_SIZE = 6
-FUT_MODE = FUT_6x6
+FUT_SIZE = 4
+FUT_MODE = FUT_4x4
 
 # Algorithm settings:
 FORWARD_CHECK = True
@@ -65,7 +66,104 @@ def futoshiki():
         print()
 
 
+def futoshiki_heuristic_comparison(size, mode, forward_check):
+    dc = DataCollector()
+    print(f'=== Futoshiki {size} ===')
+    mockup, inequalities = FutoshikiDataReader.read_file(mode, size, empty_field_value=None)
+    variables = generate_equal_domain_values(size, [x + 1 for x in range(size)])
+    constraints = [UniqueRowElementsConstraint(empty_field_value=None),
+                   UniqueColumnElementsConstraint(empty_field_value=None),
+                   FutoshikiInequalitiesConstraint(inequalities, empty_field_value=None)]
+
+    # --- IN ORDER ---
+    solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.IN_ORDER)
+    solver.exclude_variables(mockup)
+    solver.solve(forward_check=forward_check, till_first_solution=True)
+    print(f'Forward check: {forward_check}')
+    print(f'Heuristic: {GridCSPSolver.IN_ORDER.upper()}')
+    print(f'Steps in: {dc.step_in}')
+    print(f'Steps up: {dc.step_up}')
+    print(f'Till fst: {dc.steps_till_first}')
+    dc.reset()
+    print()
+
+    # --- LEAST VALUES FIRST ---
+    solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.LEAST_VALUES_FIRST)
+    solver.exclude_variables(mockup)
+    solver.solve(forward_check=forward_check, till_first_solution=True)
+    print(f'Forward check: {forward_check}')
+    print(f'Heuristic: {GridCSPSolver.LEAST_VALUES_FIRST.upper()}')
+    print(f'Steps in: {dc.step_in}')
+    print(f'Steps up: {dc.step_up}')
+    print(f'Till fst: {dc.steps_till_first}')
+    dc.reset()
+    print()
+
+    # --- MOST VALUES FIRST ---
+    solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.MOST_VALUES_FIRST)
+    solver.exclude_variables(mockup)
+    solver.solve(forward_check=forward_check, till_first_solution=True)
+    print(f'Forward check: {forward_check}')
+    print(f'Heuristic: {GridCSPSolver.MOST_VALUES_FIRST.upper()}')
+    print(f'Steps in: {dc.step_in}')
+    print(f'Steps up: {dc.step_up}')
+    print(f'Till fst: {dc.steps_till_first}')
+    dc.reset()
+    print()
+
+    # --- LEAST CONSTRAINTS FIRST ---
+    solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.LEAST_CONSTRAINTS_FIRST)
+    solver.exclude_variables(mockup)
+    solver.solve(forward_check=forward_check, till_first_solution=True)
+    print(f'Forward check: {forward_check}')
+    print(f'Heuristic: {GridCSPSolver.LEAST_CONSTRAINTS_FIRST.upper()}')
+    print(f'Steps in: {dc.step_in}')
+    print(f'Steps up: {dc.step_up}')
+    print(f'Till fst: {dc.steps_till_first}')
+    dc.reset()
+    print()
+
+    # --- MOST CONSTRAINTS FIRST ---
+    solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.MOST_CONSTRAINTS_FIRST)
+    solver.exclude_variables(mockup)
+    solver.solve(forward_check=forward_check, till_first_solution=True)
+    print(f'Forward check: {forward_check}')
+    print(f'Heuristic: {GridCSPSolver.MOST_CONSTRAINTS_FIRST.upper()}')
+    print(f'Steps in: {dc.step_in}')
+    print(f'Steps up: {dc.step_up}')
+    print(f'Till fst: {dc.steps_till_first}')
+    dc.reset()
+    print()
+
+
 if __name__ == '__main__':
     # binary()
-    futoshiki()
+    # futoshiki()
+    test_list = [(6, FUT_6x6)]#  [(4, FUT_4x4), (5, FUT_5x5), (6, FUT_6x6)]
+    for size, mode in test_list:
+        futoshiki_heuristic_comparison(size, mode, forward_check=False)
+        futoshiki_heuristic_comparison(size, mode, forward_check=True)
+
+    # size = 6
+    # mode = FUT_6x6
+    # forward_check = True
+    #
+    # dc = DataCollector()
+    # print(f'=== Futoshiki {size} ===')
+    # mockup, inequalities = FutoshikiDataReader.read_file(mode, size, empty_field_value=None)
+    # variables = generate_equal_domain_values(size, [x + 1 for x in range(size)])
+    # constraints = [UniqueRowElementsConstraint(empty_field_value=None),
+    #                UniqueColumnElementsConstraint(empty_field_value=None),
+    #                FutoshikiInequalitiesConstraint(inequalities, empty_field_value=None)]
+    #
+    # solver = GridCSPSolver(variables, constraints, data_collector=dc, heuristic=GridCSPSolver.LEAST_CONSTRAINTS_FIRST)
+    # solver.exclude_variables(mockup)
+    # solver.solve(forward_check=forward_check, till_first_solution=True)
+    # print(f'Forward check: {forward_check}')
+    # print(f'Heuristic: {GridCSPSolver.LEAST_CONSTRAINTS_FIRST.upper()}')
+    # print(f'Steps in: {dc.step_in}')
+    # print(f'Steps up: {dc.step_up}')
+    # print(f'Till fst: {dc.steps_till_first}')
+    # dc.reset()
+    # print()
 

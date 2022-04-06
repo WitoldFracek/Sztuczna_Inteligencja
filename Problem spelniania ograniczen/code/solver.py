@@ -16,7 +16,7 @@ class CSPSolver:
     MOST_CONSTRAINTS_FIRST = 'most constraints first'
     LEAST_CONSTRAINTS_FIRST = 'least constraints first'
 
-    def solve(self):
+    def solve(self, till_first_solution=False):
         pass
 
 
@@ -32,12 +32,14 @@ class GridCSPSolver(CSPSolver):
         self.__history = []
         self.__data_collector = data_collector
 
-    def solve(self, forward_check=False):
+    def solve(self, forward_check=False, till_first_solution=False):
         solutions = []
         variable: Variable = self.__take_next()
         if forward_check:
             self.__pre_eliminate()
         while variable is not None:
+            # pretty_binary_print(self.__grid)
+            # print()
             if variable.all_checked:
                 self.__rollback(variable)
                 variable = self.__take_previous()
@@ -56,7 +58,12 @@ class GridCSPSolver(CSPSolver):
                         variable = self.__take_next(variable)
                     if variable is None:
                         solutions.append(copy.deepcopy(self.__grid))
-                        print(len(solutions))
+                        if self.__data_collector is not None:
+                            if not self.__data_collector.first_found:
+                                self.__data_collector.first_found = True
+                                self.__data_collector.steps_till_first = self.__data_collector.step_in + self.__data_collector.step_up
+                        if till_first_solution:
+                            break
                         variable = self.__take_previous()
                         if variable.all_checked:
                             self.__rollback(variable)
@@ -108,6 +115,8 @@ class GridCSPSolver(CSPSolver):
             variable.recover_from_history(eliminator_id)
 
     def __take_next(self, current=None) -> Variable:
+        if self.__data_collector is not None:
+            self.__data_collector.step_in += 1
         if current is not None:
             self.__history.append(current)
         if self.__heuristic == CSPSolver.IN_ORDER:
@@ -123,6 +132,8 @@ class GridCSPSolver(CSPSolver):
         raise Exception(f'No heuristic name \'{self.__heuristic}\' found.')
 
     def __take_previous(self):
+        if self.__data_collector is not None:
+            self.__data_collector.step_up += 1
         if self.__history:
             prev = self.__history[-1]
             self.__history = self.__history[:-1]
@@ -136,12 +147,6 @@ class GridCSPSolver(CSPSolver):
         return None
 
     def __not_set_variables(self) -> list[Variable]:
-        # ret = []
-        # for i in range(self.__size):
-        #     for j in range(self.__size):
-        #         if self.__grid[i, j].value is None:
-        #             ret.append(self.__grid[i, j])
-        # return ret
         return Qlist(*self.__variables).where(lambda x: x.value is None).to_list()
 
     def __least_values_first(self, reverse=False):
