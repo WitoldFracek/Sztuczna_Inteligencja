@@ -59,7 +59,7 @@ class BinaryNeighbourConstraint(Constraint):
     def __are_adjacent_correct(self, left, right, value) -> bool:
         if len(left) < 1 or len(right) < 1:
             return True
-        if left[-1] is None or right[0] is None:
+        if left[-1].value is None or right[0].value is None:
             return True
         if left[-1].value == value and right[0].value == value:
             return False
@@ -110,8 +110,14 @@ class UniqueLinesConstraint(Constraint):
         for i, line in enumerate(lines):
             for j, li in enumerate(lines):
                 if i != j:
-                    if np.all(line == li):
+                    equal = 0
+                    for x in range(len(line)):
+                        if line[x].value == li[x].value:
+                            equal += 1
+                    if equal == len(line):
                         return False
+                    # if np.all(line == li):
+                    #     return False
         return True
 
 
@@ -133,8 +139,10 @@ class UniqueRowsConstraint(UniqueLinesConstraint):
     def __grab_full_rows(self, grid):
         full_rows = []
         for row in grid:
-            if None not in row:
+            if Qlist(*row).where(lambda variable: variable.value is not None).len() == len(row):
                 full_rows.append(row)
+            # if None not in row:
+            #     full_rows.append(row)
         return full_rows
 
 
@@ -143,21 +151,23 @@ class UniqueColumnsConstraint(UniqueLinesConstraint):
         Constraint.__init__(self)
 
     def __call__(self, grid: np.ndarray, variable: Variable, value, **kwargs):
-        rows = self.__grab_full_columns(grid)
-        return self._no_dupicates(rows)
+        columns = self.__grab_full_columns(grid)
+        return self._no_dupicates(columns)
 
     def constraint_count(self, grid: np.ndarray, variable: Variable, value, **kwargs) -> int:
         unmet = 0
-        rows = self.__grab_full_columns(grid)
-        if not self._no_dupicates(rows):
+        columns = self.__grab_full_columns(grid)
+        if not self._no_dupicates(columns):
             unmet += 1
         return unmet
 
     def __grab_full_columns(self, grid):
         full_columns = []
         for col_idx in range(grid.shape[1]):
-            if None not in grid[:, col_idx]:
+            if Qlist(*grid[:, col_idx]).where(lambda variable: variable.value is not None).len() == grid.shape[1]:
                 full_columns.append(grid[:, col_idx])
+            # if None not in grid[:, col_idx]:
+            #     full_columns.append(grid[:, col_idx])
         return full_columns
 
 

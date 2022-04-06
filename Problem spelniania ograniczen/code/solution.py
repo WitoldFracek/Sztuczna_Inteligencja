@@ -4,25 +4,28 @@ from solver import GridCSPSolver
 from data_readers import BinaryDataReader, FutoshikiDataReader
 from printers import pretty_binary_print, pretty_futoshiki_print
 
-# Binary
+
 BIN_2x2 = '../data/binary_2x2'
 BIN_4x4 = '../data/binary_4x4'
 BIN_6x6 = '../data/binary_6x6'
 BIN_8x8 = '../data/binary_8x8'
 BIN_10x10 = '../data/binary_10x10'
 
-# Futoshiki
 FUT_4x4 = '../data/futoshiki_4x4'
 FUT_5x5 = '../data/futoshiki_5x5'
 FUT_6x6 = '../data/futoshiki_6x6'
 
+# Binary:
 BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
+# Futoshiki:
 FUT_SIZE = 5
 FUT_MODE = FUT_5x5
 
+# Algorithm settings:
 FORWARD_CHECK = True
+HEURISTIC = GridCSPSolver.LEAST_VALUES_FIRST
 
 
 def binary():
@@ -33,7 +36,7 @@ def binary():
                    BinaryNeighbourConstraint(),
                    UniqueColumnsConstraint(),
                    UniqueRowsConstraint()]
-    solver = GridCSPSolver(variables, constraints)
+    solver = GridCSPSolver(variables, constraints, heuristic=HEURISTIC)
     solver.exclude_variables(mockup)
 
     pretty_binary_print(solver.grid, mockup)
@@ -50,7 +53,7 @@ def futoshiki():
     constraints = [UniqueRowElementsConstraint(empty_field_value=None),
                    UniqueColumnElementsConstraint(empty_field_value=None),
                    FutoshikiInequalitiesConstraint(inequalities, empty_field_value=None)]
-    solver = GridCSPSolver(variables, constraints)
+    solver = GridCSPSolver(variables, constraints, heuristic=HEURISTIC)
     solver.exclude_variables(mockup)
 
     pretty_futoshiki_print(solver.grid, inequalities, mockup)
@@ -63,6 +66,6 @@ def futoshiki():
 
 
 if __name__ == '__main__':
-    binary()
-    # futoshiki()
+    # binary()
+    futoshiki()
 

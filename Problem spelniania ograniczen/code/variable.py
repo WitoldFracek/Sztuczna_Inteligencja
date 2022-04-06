@@ -11,10 +11,12 @@ class Variable:
         self.__identifier = identifier
         self.value = None
         self.modification_history: dict = {}
+        self.self_eliminated = set()
         self.empty_value_repr = empty_value_repr
 
     def refill(self):
-        self.__available_values = self.__domain.copy()
+        self.__available_values = self.self_eliminated.copy()
+        self.self_eliminated.clear()
 
     @property
     def all_checked(self) -> bool:
@@ -24,8 +26,11 @@ class Variable:
     def position(self) -> (int, int):
         return self.__x, self.__y
 
-    def set_x(self, x):
-        self.__x = x
+    @property
+    def first(self):
+        value = self.__available_values.pop()
+        self.self_eliminated.add(value)
+        return value
 
     @property
     def domain(self) -> set:
@@ -60,21 +65,41 @@ class Variable:
             setattr(ret, k, copy.deepcopy(v))
         return ret
 
-    def eliminate(self, grid: np.ndarray, constraints: list[...], eliminator_id: int):
-        eliminated = set()
+    def pre_eliminate(self, grid: np.ndarray, constraints: list[...]):
+        eliminated = []
         for value in self.__available_values:
             if not self.__check_if_fits(grid, constraints, value):
-                eliminated.add(value)
+                eliminated.append(value)
         for value in eliminated:
             self.__available_values.remove(value)
-        self.modification_history[eliminator_id] = eliminated
+
+    def eliminate(self, grid: np.ndarray, constraints: list[...], eliminator_id: int):
+        eliminated = []
+        for value in self.__available_values:
+            if not self.__check_if_fits(grid, constraints, value):
+                eliminated.append(value)
+        for value in eliminated:
+            self.__available_values.remove(value)
+        print(f'Available ({self.id}): {self.__available_values}')
+        if len(eliminated) != 0:
+            if eliminator_id in self.modification_history:
+                self.modification_history[eliminator_id].update(eliminated)
+            else:
+                self.modification_history[eliminator_id] = {*eliminated}
 
     def recover_from_history(self, eliminator_id: int):
+        if eliminator_id not in self.modification_history:
+            return
         rec = self.modification_history[eliminator_id]
         self.__available_values.update(rec)
+        print(f'{self.modification_history}')
+        print(rec)
+        print(f"({self.id})recovered values: {self.__available_values}")
         del self.modification_history[eliminator_id]
 
     def __check_if_fits(self, grid: np.ndarray, constraints: list[...], value) -> bool:
+        # fit = [constraint(grid, self, value) for constraint in constraints]
+        # print(f'Fitting: {self}: value = {value}', fit)
         return all([constraint(grid, self, value) for constraint in constraints])
 
 

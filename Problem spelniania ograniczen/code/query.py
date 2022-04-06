@@ -1,4 +1,3 @@
-import random
 
 
 class Qlist:
@@ -65,7 +64,5 @@ class Qlist:
 
 
 if __name__ == '__main__':
-    ql = Qlist(1, 7, 3, 6, 5, 4, 2)
-    print(ql.where(lambda x: x < 5).select(lambda x: x ** 2).order_by(lambda x: x).reverse())
-    s = {*ql}
-    print(s)
+    xs = [1, 2, 3]
+    print(xs[2:3])
