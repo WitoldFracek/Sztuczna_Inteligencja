@@ -20,8 +20,8 @@ BIN_SIZE = 10
 BIN_MODE = BIN_10x10
 
 # Futoshiki:
-FUT_SIZE = 5
-FUT_MODE = FUT_5x5
+FUT_SIZE = 6
+FUT_MODE = FUT_6x6
 
 # Algorithm settings:
 FORWARD_CHECK = True

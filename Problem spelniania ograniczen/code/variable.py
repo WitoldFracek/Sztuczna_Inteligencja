@@ -80,7 +80,6 @@ class Variable:
                 eliminated.append(value)
         for value in eliminated:
             self.__available_values.remove(value)
-        print(f'Available ({self.id}): {self.__available_values}')
         if len(eliminated) != 0:
             if eliminator_id in self.modification_history:
                 self.modification_history[eliminator_id].update(eliminated)
@@ -92,14 +91,9 @@ class Variable:
             return
         rec = self.modification_history[eliminator_id]
         self.__available_values.update(rec)
-        print(f'{self.modification_history}')
-        print(rec)
-        print(f"({self.id})recovered values: {self.__available_values}")
         del self.modification_history[eliminator_id]
 
     def __check_if_fits(self, grid: np.ndarray, constraints: list[...], value) -> bool:
-        # fit = [constraint(grid, self, value) for constraint in constraints]
-        # print(f'Fitting: {self}: value = {value}', fit)
         return all([constraint(grid, self, value) for constraint in constraints])
 
 
@@ -107,7 +101,6 @@ if __name__ == '__main__':
     v1 = Variable((0, 0), [1, 2, 3])
     v2 = copy.copy(v1)
     print(v2.position)
-    v1.set_x(10)
     print(v2.position)
 
 

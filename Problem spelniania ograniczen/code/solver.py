@@ -35,37 +35,28 @@ class GridCSPSolver(CSPSolver):
     def solve(self, forward_check=False):
         solutions = []
         variable: Variable = self.__take_next()
-        # inq = Qlist(*self.__constraints).where(lambda c: hasattr(c, 'inequalities'))[0].inequalities
         if forward_check:
             self.__pre_eliminate()
         while variable is not None:
-            print(variable.id)
-            # print(f'Current variable: id={variable.id}, domain={variable.available_values}')
             if variable.all_checked:
                 self.__rollback(variable)
                 variable = self.__take_previous()
                 if forward_check:
                     if variable is not None:
                         self.__recover_forward_domains(variable.id)
-                    # print([(v.id, v.available_values, v.modification_history) for v in self.__not_set_variables()])
-                    # print()
-                # variable = self.__take_previous()
             else:
                 value = variable.first
                 if all([constraint(self.__grid, variable, value) for constraint in self.__constraints]):
                     variable.value = value
-                    pretty_binary_print(self.__grid)
                     if forward_check:
                         self.__forward_elimination(variable.id)
-                        # print([(v.id, v.available_values, v.modification_history) for v in self.__not_set_variables()])
-                        # print()
                     if forward_check and self.__empty_forward_domains():
                         self.__recover_forward_domains(variable.id)
-                    # pretty_futoshiki_print(self.__grid, inq)
                     else:
                         variable = self.__take_next(variable)
                     if variable is None:
                         solutions.append(copy.deepcopy(self.__grid))
+                        print(len(solutions))
                         variable = self.__take_previous()
                         if variable.all_checked:
                             self.__rollback(variable)
