@@ -48,10 +48,13 @@ class GridCSPSolver(CSPSolver):
                         self.__recover_forward_domains(variable.id)
             else:
                 value = variable.first
+                if self.__data_collector is not None:
+                    self.__data_collector.nodes += 1
                 if all([constraint(self.__grid, variable, value) for constraint in self.__constraints]):
+                    #tutaj dodac liczenie wezlow
                     variable.value = value
                     if forward_check:
-                        self.__forward_elimination(variable.id)
+                        self.__forward_elimination(variable.id)  # profiler
                     if forward_check and self.__empty_forward_domains():
                         self.__recover_forward_domains(variable.id)
                     else:
@@ -61,7 +64,7 @@ class GridCSPSolver(CSPSolver):
                         if self.__data_collector is not None:
                             if not self.__data_collector.first_found:
                                 self.__data_collector.first_found = True
-                                self.__data_collector.steps_till_first = self.__data_collector.step_in + self.__data_collector.step_up
+                                self.__data_collector.steps_till_first = self.__data_collector.nodes
                         if till_first_solution:
                             break
                         variable = self.__take_previous()
@@ -115,8 +118,6 @@ class GridCSPSolver(CSPSolver):
             variable.recover_from_history(eliminator_id)
 
     def __take_next(self, current=None) -> Variable:
-        if self.__data_collector is not None:
-            self.__data_collector.step_in += 1
         if current is not None:
             self.__history.append(current)
         if self.__heuristic == CSPSolver.IN_ORDER:
@@ -126,14 +127,14 @@ class GridCSPSolver(CSPSolver):
         if self.__heuristic == CSPSolver.LEAST_VALUES_FIRST:
             return self.__least_values_first(reverse=False)
         if self.__heuristic == CSPSolver.MOST_CONSTRAINTS_FIRST:
-            return self.__least_constraints_first(reverse=True)
+            return self.__most_constraints_first(reverse=False)
         if self.__heuristic == CSPSolver.LEAST_CONSTRAINTS_FIRST:
-            return self.__least_constraints_first(reverse=False)
+            return self.__most_constraints_first(reverse=True)
         raise Exception(f'No heuristic name \'{self.__heuristic}\' found.')
 
     def __take_previous(self):
-        if self.__data_collector is not None:
-            self.__data_collector.step_up += 1
+        # if self.__data_collector is not None:
+        #     self.__data_collector.step_up += 1
         if self.__history:
             prev = self.__history[-1]
             self.__history = self.__history[:-1]
@@ -160,7 +161,7 @@ class GridCSPSolver(CSPSolver):
             pairs = pairs.reverse()
         return pairs[0][0]
 
-    def __least_constraints_first(self, reverse=False):
+    def __most_constraints_first(self, reverse=False):
         not_set = self.__not_set_variables()
         if not not_set:
             return None
@@ -172,7 +173,7 @@ class GridCSPSolver(CSPSolver):
             constraints_number.append((variable, partial_sum))
         constraints_number.order_by(lambda pair: pair[1])
         if reverse:
-            constraints_number.reverse()
+            constraints_number = constraints_number.reverse()
         return constraints_number[0][0]
 
     def print_all_domains(self):

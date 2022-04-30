@@ -11,10 +11,7 @@ class Qlist:
         return Qlist(*[selection(elem) for elem in self.__list])
 
     def where(self, predicate):
-        ret = Qlist()
-        for elem in self.__list:
-            if predicate(elem):
-                ret.append(elem)
+        ret = Qlist(*[elem for elem in self.__list if predicate(elem)])
         return ret
 
     def order_by(self, value_accessor=lambda x: x):
@@ -62,8 +59,8 @@ class Qlist:
     def __repr__(self):
         return str(self)
 
-
 if __name__ == '__main__':
-    my_list = Qlist(4, 2, 8, 1, 2, 9, 5)
-    res = my_list.select(lambda x: x * x).where(lambda x: x > 10).order_by(lambda x: x).reverse()
-    print(res)
+    xs = Qlist(4, 2, 8, 1, 2, 9, 5, 5, 5, 8, 8, 4, 3, 2, 1)
+    xs = xs.select(lambda x: x ** 2).where(lambda x: x > 20).group_by(lambda x: x).order_by(lambda x: x[0])
+    print(xs)
+
