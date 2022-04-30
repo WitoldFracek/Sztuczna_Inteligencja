@@ -20,6 +20,13 @@ class Cell:
             return ' '
         return self.piece.marker
 
+    @property
+    def is_empty(self):
+        return self.piece is None
+
+    def is_opposite_colour(self, cell):
+        return self.piece.colour != cell.piece.colour
+
 
 
 

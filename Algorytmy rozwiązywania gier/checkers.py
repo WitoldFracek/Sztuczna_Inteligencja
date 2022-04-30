@@ -30,16 +30,31 @@ class Checkers:
                 for cell in self.board[-1 - i][::2]:
                     cell.piece = Pawn(Pawn.BLACK)
 
-    def can_capture(self) -> bool:
+    def can_capture(self, color) -> bool:
         pawns_coordinates = []
         for i, line in enumerate(self.board):
             for j, cell in enumerate(line):
                 if cell.piece is not None:
-                    pawns_coordinates.append((i, j))
+                    if cell.piece.colour == color:
+                        pawns_coordinates.append((i, j))
         return any([self.can_pawn_capture(x, y) for x, y in pawns_coordinates])
 
-    def can_pawn_capture(self, x, y) -> bool:
-        pass
+    def can_pawn_capture(self, x: int, y: int) -> bool:
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        for xd, yd in directions:
+            if 0 <= x + xd < len(self.board)\
+                    and 0 <= y + yd < len(self.board)\
+                    and 0 <= x + 2 * xd < len(self.board)\
+                    and 0 <= y + 2 * yd < len(self.board):
+                cell = self.board[x + xd][y + yd]
+                if not cell.is_empty:
+                    if cell.is_opposite_colour(self.board[x][y]):
+                        if self.board[x + 2 * xd][y + 2 * yd].is_empty:
+                            return True
+        return False
+
+
+
 
     def print_board(self):
         print('   A  B  C  D  E  F  G  H ')
