@@ -83,6 +83,7 @@ class Checkers:
     def can_pawn_capture(self, x, y, excluded_cells=None) -> bool:
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         for direction in directions:
+            # print(f'{direction}: {self.is_pawn_jump_possible(x, y, direction, excluded_cells=excluded_cells)}')
             if self.is_pawn_jump_possible(x, y, direction, excluded_cells=excluded_cells):
                 return True
         return False
@@ -98,9 +99,12 @@ class Checkers:
                 if cell in excluded_cells:
                     return False
             if not cell.is_empty:
-                if cell.is_opposite_colour(self.board[x][y]):
+                if cell.piece.colour != self.current_colour:
                     if self.board[x + 2 * xd][y + 2 * yd].is_empty:
                         return True
+                # if cell.is_opposite_colour(self.board[x][y]):
+                #     if self.board[x + 2 * xd][y + 2 * yd].is_empty:
+                #         return True
         return False
 
     def can_queen_capture(self, x, y) -> bool:
@@ -109,22 +113,31 @@ class Checkers:
     def get_possible_pawn_captures(self, capturing_pawns: list[tuple[int, int]]):
         paths = []
         for x, y in capturing_pawns:
-            for p in self.get_pawn_capture_path(x, y, []):
-                paths.append(p)
-        max_len = max(paths, key=len)
+            piece = self.board[x][y].piece
+            self.board[x][y].piece = None
+            sol = []
+            self.get_pawn_capture_path(x, y, [], [], sol)
+            paths += sol
+            self.board[x][y].piece = piece
+        max_len = len(max(paths, key=len))
         return [p for p in paths if len(p) == max_len]
 
-    def get_pawn_capture_path(self, x, y, jumped_over: list[Cell]):
+    def get_pawn_capture_path(self, x, y, jumped_over: list[Cell], acc: list, solutions: list):
+        acc.append((x, y))
         if self.can_pawn_capture(x, y, excluded_cells=jumped_over):
-            path_lu = self.get_pawn_capture_path(x - 2, y - 2, list(jumped_over))
-            path_ld = self.get_pawn_capture_path(x - 2, y + 2, list(jumped_over))
-            path_ru = self.get_pawn_capture_path(x + 2, y - 2, list(jumped_over))
-            path_rd = self.get_pawn_capture_path(x + 2, y + 2, list(jumped_over))
-            paths = [path_lu, path_ld, path_ru, path_rd]
-            max_length = max(paths, key=len)
-            longest_paths = [p for p in paths if len(p) == max_length]
-            return longest_paths
-        return []
+            directions = self.pawn_capture_directions(x, y, excluded_cells=jumped_over)
+            for direction in directions:
+                new_x, new_y, capture_x, capture_y = self.pawn_jump(x, y, direction)
+                jumped_over_copy = jumped_over.copy()
+                acc_copy = acc.copy()
+                jumped_over_copy.append(self.board[capture_x][capture_y])
+                self.get_pawn_capture_path(new_x,
+                                           new_y,
+                                           jumped_over_copy,
+                                           acc_copy,
+                                           solutions)
+        else:
+            solutions.append(acc)
 
     def pawn_jump(self, x_start: int, y_start: int, direction: tuple[int, int]):
         xd, yd = direction
