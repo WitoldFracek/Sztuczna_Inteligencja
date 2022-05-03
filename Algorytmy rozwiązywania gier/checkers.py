@@ -91,7 +91,7 @@ class Checkers:
         capturing_pawns, capturing_queens = self.get_capturing_pieces(pieces)
         if capturing_pawns or capturing_queens:
             pawn_captures = self.get_possible_pawn_captures(capturing_pawns)
-            queen_captures = []
+            queen_captures = self.get_possible_queen_captures(capturing_queens)
             pos = self.current_player.capture(pawn_captures + queen_captures, self.board)
             self.execute_capture(pos, pawn_captures + queen_captures)
         else:
@@ -148,7 +148,7 @@ class Checkers:
                 if self.can_pawn_capture(x, y):
                     capturing_pawns.append((x, y))
             elif isinstance(cell.piece, Queen):
-                if self.can_queen_capture(x, y):
+                if self.can_queen_capture(x, y, []):
                     capturing_queens.append((x, y))
         return capturing_pawns, capturing_queens
 
@@ -218,11 +218,20 @@ class Checkers:
         return moves
 
     def get_possible_queen_captures(self, capturing_queens: list[tuple[int, int]]):
-        pass
+        paths = []
+        for x, y in capturing_queens:
+            piece = self.board[x][y].piece
+            self.board[x][y].piece = None
+            sol = []
+            self.get_queen_capture_path(x, y, [], [], sol)
+            paths += sol
+            self.board[x][y].piece = piece
+        max_len = len(max(paths, key=len))
+        return [p for p in paths if len(p) == max_len]
 
     def get_queen_move_path(self, x, y):
         moves = []
-        diagonals = [self.__queen_diagonal(x, y, direction) for direction in self.__directions]
+        diagonals = [self.__diagonal(x, y, direction) for direction in self.__directions]
         for diagonal in diagonals:
             obstacle_found = False
             for dx, dy in diagonal:
@@ -234,7 +243,42 @@ class Checkers:
         return moves
 
     def get_queen_capture_path(self, x, y, jumped_over: list[Cell], acc: list, solutions):
-        pass
+        acc.append((x, y))
+        if self.can_queen_capture(x, y, excluded_cells=jumped_over):
+            landing_spots = self.get_queen_landing_spots(x, y, excluded_cells=jumped_over)
+            for enemy, spots in landing_spots:
+                ex, ey = enemy
+                jumped_over.append(self.board[ex][ey])
+                for sx, sy in spots:
+                    jumped_over_copy = jumped_over.copy()
+                    acc_copy = acc.copy()
+                    self.get_queen_capture_path(sx, sy, jumped_over_copy, acc_copy, solutions)
+        else:
+            solutions.append(acc)
+
+    def get_queen_landing_spots(self, x, y, excluded_cells: list[Cell]):
+        queen = self.board[x][y].piece
+        landing_pairs = []
+        for direction in self.__directions:
+            diagonal = self.__diagonal(x, y, direction)
+            first_enemy = -1
+            enemy = (-1, -1)
+            second_enemy = -1
+            for i, (dx, dy) in enumerate(diagonal):
+                cell = self.board[dx][dy]
+                if not cell.is_empty:
+                    if cell.piece.colour != self.current_colour:
+                        if cell not in excluded_cells:
+                            if first_enemy == -1:
+                                first_enemy = i
+                                enemy = (dx, dy)
+                            elif second_enemy == -1:
+                                second_enemy = i
+            if second_enemy == -1:
+                second_enemy = len(diagonal)
+            if first_enemy != -1:
+                landing_pairs += [(enemy, diagonal[first_enemy + 1:second_enemy])]
+        return landing_pairs
 
     # === CHECKS === -----------------------------------------------------------------------------------------
     def can_pawn_capture(self, x, y, excluded_cells=None) -> bool:
@@ -272,20 +316,20 @@ class Checkers:
                         return True
         return False
 
-    def can_queen_capture(self, x, y) -> bool:
+    def can_queen_capture(self, x, y, excluded_cells: list[Cell]) -> bool:
         for direction in self.__directions:
-            if self.is_queen_jump_possible(x, y, direction):
+            if self.is_queen_jump_possible(x, y, direction, excluded_cells=excluded_cells):
                 return True
         return False
 
-    def __queen_diagonal(self, queen_x, queen_y, direction) -> list[tuple[int, int]]:
+    def __diagonal(self, queen_x, queen_y, direction) -> list[tuple[int, int]]:
         xd, yd = direction
         return [(queen_x + (i * xd), queen_y + (i * yd)) for i in range(1, 8)
                 if self.__is_in_bounds(queen_x + (i * xd), queen_y + (i * yd))]
 
     def is_queen_jump_possible(self, x, y, direction, excluded_cells=None):
         xd, yd = direction
-        diagonal = self.__queen_diagonal(x, y, direction)
+        diagonal = self.__diagonal(x, y, direction)
         for land_x, land_y in diagonal[:-1]:
             cell = self.board[land_x][land_y]
             if excluded_cells is not None:
@@ -311,6 +355,11 @@ class Checkers:
 
     def __is_in_bounds(self, x, y):
         return 0 <= x < len(self.board) and 0 <= y < len(self.board)
+
+    def __get_captured_enemy(self, start_x, start_y, land_x, land_y):
+        xd = 1 if land_x > start_x else -1
+        xy = 1 if land_y > start_y else -1
+        diagonal = self.__diagonal(start_x, start_y, (dx, dy))
 
 
     # === UTILS === -----------------------------------------------------------------------------------

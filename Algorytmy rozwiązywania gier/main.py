@@ -10,5 +10,5 @@ if __name__ == '__main__':
     # c.board[4][4].piece = Pawn(Checkers.BLACK, Color.FG.BLACK)
     # c.board[4][2].piece = Pawn(Checkers.BLACK, Color.FG.BLACK)
     # c.board[1][3].piece = None
-    # c.play()
-    c.is_queen_jump_possible(3, 3, (-1, -1))
+    c.play()
+    # c.is_queen_jump_possible(3, 3, (-1, -1))
