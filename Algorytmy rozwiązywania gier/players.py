@@ -14,7 +14,7 @@ class Player:
 
 
 class Human(Player):
-    def __init__(self, colour, name):
+    def __init__(self, colour, name=None):
         Player.__init__(self, colour, name)
 
     def move(self, possible_moves, board) -> int:
@@ -56,4 +56,17 @@ class Human(Player):
             except ValueError:
                 print(f'Invalid input. Type number between 0 and {len(possible_captures) - 1}')
         return pos
+
+
+class DummyBot(Player):
+    def __init__(self, colour, name=None):
+        Player.__init__(self, colour, name)
+
+    def move(self, possible_moves, board) -> int:
+        import random
+        return random.randint(0, len(possible_moves) - 1)
+
+    def capture(self, possible_moves, board) -> int:
+        import random
+        return random.randint(0, len(possible_moves))
 

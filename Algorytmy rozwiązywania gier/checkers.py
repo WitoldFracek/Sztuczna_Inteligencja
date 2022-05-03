@@ -1,3 +1,4 @@
+import cell
 from cell import Cell
 from pieces import Piece, Pawn, Queen
 from colors import Color
@@ -14,18 +15,6 @@ from players import Player, Human
 # 6|   x   x   x   x
 # 7| x   x   x   x
 # 8|   x   x   x   x
-
-
-class CapturePath:
-    def __init__(self, start):
-        self.start = start
-        self.path = []
-
-    def __iadd__(self, other):
-        self.path.append(other)
-
-    def get_path(self):
-        return self.start, self.path
 
 
 class Checkers:
@@ -76,6 +65,7 @@ class Checkers:
             self.print_board()
             self.one_move()
         self.__switch_player()
+        self.print_board()
         print(f'Player {self.current_player.name} win!')
 
     def __switch_player(self):
@@ -92,14 +82,16 @@ class Checkers:
         if capturing_pawns or capturing_queens:
             pawn_captures = self.get_possible_pawn_captures(capturing_pawns)
             queen_captures = self.get_possible_queen_captures(capturing_queens)
-            pos = self.current_player.capture(pawn_captures + queen_captures, self.board)
-            self.execute_capture(pos, pawn_captures + queen_captures)
+            captures = self.__get_longest_captures(pawn_captures, queen_captures)
+            pos = self.current_player.capture(captures, self.board)
+            self.execute_capture(pos, captures)
         else:
             moving_pawns, moving_queens = self.get_moving_pieces(pieces)
             pawn_moves = self.get_possible_pawn_moves(moving_pawns)
-            queen_moves = []
+            queen_moves = self.get_possible_queen_moves(moving_queens)
             pos = self.current_player.move(pawn_moves + queen_moves, self.board)
             self.execute_move(pos, pawn_moves + queen_moves)
+        self.promote_to_queen()
         self.__switch_player()
 
     def execute_move(self, pos, available_moves):
@@ -118,8 +110,7 @@ class Checkers:
         moving_piece = self.board[sx][sy].piece
         self.board[sx][sy].piece = None
         for ex, ey in capture[1:]:
-            cx = (sx + ex) // 2
-            cy = (sy + ey) // 2
+            cx, cy = self.__get_captured_enemy(sx, sy, ex, ey)
             if self.current_colour == self.WHITE:
                 self.black_count -= 1
             else:
@@ -128,6 +119,19 @@ class Checkers:
             sx = ex
             sy = ey
         self.board[sx][sy].piece = moving_piece
+
+    def promote_to_queen(self):
+        for i in range(8):
+            cell1 = self.board[0][i]
+            if not cell1.is_empty:
+                if cell1.piece.colour == self.BLACK:
+                    if isinstance(cell1.piece, Pawn):
+                        cell1.piece = cell1.piece.transform_to_queen()
+            cell2 = self.board[7][i]
+            if not cell2.is_empty:
+                if cell2.piece.colour == self.WHITE:
+                    if isinstance(cell2.piece, Pawn):
+                        cell2.piece = cell2.piece.transform_to_queen()
 
     # === PIECE ACCESSORS === --------------------------------------------------------------------------------
     def get_pieces(self) -> list[tuple[int, int]]:
@@ -161,7 +165,8 @@ class Checkers:
                 if self.can_pawn_move(x, y):
                     moving_pawns.append((x, y))
             elif isinstance(piece, Queen):
-                ...
+                if self.can_queen_move(x, y):
+                    moving_queens.append((x, y))
         return moving_pawns, moving_queens
 
     # === MOVES ACCESSORS === --------------------------------------------------------------------------------
@@ -181,6 +186,8 @@ class Checkers:
             self.get_pawn_capture_path(x, y, [], [], sol)
             paths += sol
             self.board[x][y].piece = piece
+        if not paths:
+            return []
         max_len = len(max(paths, key=len))
         return [p for p in paths if len(p) == max_len]
 
@@ -226,6 +233,8 @@ class Checkers:
             self.get_queen_capture_path(x, y, [], [], sol)
             paths += sol
             self.board[x][y].piece = piece
+        if not paths:
+            return []
         max_len = len(max(paths, key=len))
         return [p for p in paths if len(p) == max_len]
 
@@ -257,7 +266,6 @@ class Checkers:
             solutions.append(acc)
 
     def get_queen_landing_spots(self, x, y, excluded_cells: list[Cell]):
-        queen = self.board[x][y].piece
         landing_pairs = []
         for direction in self.__directions:
             diagonal = self.__diagonal(x, y, direction)
@@ -294,8 +302,7 @@ class Checkers:
 
     def is_pawn_move_possible(self, x, y, direction):
         xd, yd = direction
-        if 0 <= x + xd < len(self.board) \
-                and 0 <= y + yd < len(self.board):
+        if self.__is_in_bounds(x + xd, y + yd):
             cell = self.board[x + xd][y + yd]
             return cell.is_empty
         return False
@@ -315,6 +322,19 @@ class Checkers:
                     if self.board[x + 2 * xd][y + 2 * yd].is_empty:
                         return True
         return False
+
+    def is_queen_move_possible(self, x, y, direction):
+        xd, yd = direction
+        if self.__is_in_bounds(x + xd, y + yd):
+            return self.board[x + xd][y + yd].is_empty
+        return False
+
+    def can_queen_move(self, x, y):
+        for direction in self.__directions:
+            if self.is_queen_move_possible(x, y, direction):
+                return True
+        return False
+
 
     def can_queen_capture(self, x, y, excluded_cells: list[Cell]) -> bool:
         for direction in self.__directions:
@@ -358,8 +378,17 @@ class Checkers:
 
     def __get_captured_enemy(self, start_x, start_y, land_x, land_y):
         xd = 1 if land_x > start_x else -1
-        xy = 1 if land_y > start_y else -1
-        diagonal = self.__diagonal(start_x, start_y, (dx, dy))
+        yd = 1 if land_y > start_y else -1
+        diagonal = self.__diagonal(start_x, start_y, (xd, yd))
+        for diag_x, diag_y in diagonal:
+            if not self.board[diag_x][diag_y].is_empty:
+                if self.board[diag_x][diag_y].piece.colour != self.current_colour:
+                    return diag_x, diag_y
+
+    def __get_longest_captures(self, pawn_captures, queen_captures):
+        captures = pawn_captures + queen_captures
+        max_len = len(max(captures, key=len))
+        return [c for c in captures if len(c) == max_len]
 
 
     # === UTILS === -----------------------------------------------------------------------------------

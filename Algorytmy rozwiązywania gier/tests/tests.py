@@ -118,5 +118,13 @@ class CapturingPathTest(ut.TestCase):
         cap = checkers.get_possible_queen_captures([(7, 3)])
         self.assertEqual(len(cap), 3)
 
+    def test_queen_promotion(self):
+        checkers = Checkers.empty_board_checkers()
+        checkers.board[7][1].piece = Pawn(Checkers.WHITE, Color.FG.WHITE)
+        checkers.board[0][6].piece = Pawn(Checkers.BLACK, Color.FG.BLACK)
+        checkers.promote_to_queen()
+        self.assertEqual(isinstance(checkers.board[7][1].piece, Queen), True)
+        self.assertEqual(isinstance(checkers.board[0][6].piece, Queen), True)
+
 
 
