@@ -60,6 +60,7 @@ class Checkers:
                     cell.piece = Pawn(self.WHITE, Color.FG.WHITE)
                 for cell in self.board[-1 - i][::2]:
                     cell.piece = Pawn(self.BLACK, Color.FG.BLACK)
+        self.__directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 
     @classmethod
     def empty_board_checkers(cls, start_colour=WHITE):
@@ -74,6 +75,8 @@ class Checkers:
         while self.white_count and self.black_count:
             self.print_board()
             self.one_move()
+        self.__switch_player()
+        print(f'Player {self.current_player.name} win!')
 
     def __switch_player(self):
         if self.current_player == self.player1:
@@ -208,10 +211,34 @@ class Checkers:
                 moves.append([(x, y), (x - 1, y + 1)])
         return moves
 
+    def get_possible_queen_moves(self, moving_queens: list[tuple[int, int]]):
+        moves = []
+        for qx, qy in moving_queens:
+            moves += self.get_queen_move_path(qx, qy)
+        return moves
+
+    def get_possible_queen_captures(self, capturing_queens: list[tuple[int, int]]):
+        pass
+
+    def get_queen_move_path(self, x, y):
+        moves = []
+        diagonals = [self.__queen_diagonal(x, y, direction) for direction in self.__directions]
+        for diagonal in diagonals:
+            obstacle_found = False
+            for dx, dy in diagonal:
+                if not obstacle_found:
+                    if self.board[dx][dy].is_empty:
+                        moves.append([(x, y), (dx, dy)])
+                    else:
+                        obstacle_found = True
+        return moves
+
+    def get_queen_capture_path(self, x, y, jumped_over: list[Cell], acc: list, solutions):
+        pass
+
     # === CHECKS === -----------------------------------------------------------------------------------------
     def can_pawn_capture(self, x, y, excluded_cells=None) -> bool:
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        for direction in directions:
+        for direction in self.__directions:
             if self.is_pawn_jump_possible(x, y, direction, excluded_cells=excluded_cells):
                 return True
         return False
@@ -246,6 +273,28 @@ class Checkers:
         return False
 
     def can_queen_capture(self, x, y) -> bool:
+        for direction in self.__directions:
+            if self.is_queen_jump_possible(x, y, direction):
+                return True
+        return False
+
+    def __queen_diagonal(self, queen_x, queen_y, direction) -> list[tuple[int, int]]:
+        xd, yd = direction
+        return [(queen_x + (i * xd), queen_y + (i * yd)) for i in range(1, 8)
+                if self.__is_in_bounds(queen_x + (i * xd), queen_y + (i * yd))]
+
+    def is_queen_jump_possible(self, x, y, direction, excluded_cells=None):
+        xd, yd = direction
+        diagonal = self.__queen_diagonal(x, y, direction)
+        for land_x, land_y in diagonal[:-1]:
+            cell = self.board[land_x][land_y]
+            if excluded_cells is not None:
+                if cell in excluded_cells:
+                    return False
+            if not cell.is_empty:
+                if self.board[land_x + xd][land_y + yd].is_empty:
+                    if self.current_colour != cell.piece.colour:
+                        return True
         return False
 
     # === JUMPS / CAPTURES UTILS === ------------------------------------------------------------------
@@ -254,12 +303,15 @@ class Checkers:
         return x_start + 2 * xd, y_start + 2 * yd, x_start + xd, y_start + yd
 
     def pawn_capture_directions(self, x, y, excluded_cells=None) -> list[tuple[int, int]]:
-        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         ret = []
-        for direction in directions:
+        for direction in self.__directions:
             if self.is_pawn_jump_possible(x, y, direction, excluded_cells=excluded_cells):
                 ret.append(direction)
         return ret
+
+    def __is_in_bounds(self, x, y):
+        return 0 <= x < len(self.board) and 0 <= y < len(self.board)
+
 
     # === UTILS === -----------------------------------------------------------------------------------
     def print_board(self):
@@ -298,5 +350,6 @@ class Checkers:
     @staticmethod
     def alias_from_coordinates(coordinates):
         return 'ABCDEFGH'[coordinates[1]] + '12345678'[coordinates[0]]
+
 
 

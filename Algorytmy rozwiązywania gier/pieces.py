@@ -9,9 +9,6 @@ class Piece:
     @property
     def marker(self):
         return f'{self.console_colour}●{Color.END}'
-        # if self.colour == self.WHITE:
-        #     return '●'
-        # return f'{Color.FG.BLACK}●{Color.END}'
 
     def __repr__(self):
         return f'{self.__class__.__name__} {self.colour}'
@@ -20,6 +17,10 @@ class Piece:
 class Queen(Piece):
     def __init__(self, colour: str, console_colour: str):
         Piece.__init__(self, colour, console_colour)
+
+    @property
+    def marker(self):
+        return f'{self.console_colour}Q{Color.END}'
 
 
 class Pawn(Piece):

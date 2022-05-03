@@ -39,3 +39,5 @@ class Color:
 
 if __name__ == '__main__':
     print(f'{Color.color(255, 200, 0)}RED{Color.END} Heeeee')
+    xs = [1, 2, 3, 4]
+    print(xs[:-1])
