@@ -59,8 +59,19 @@ class Human(Player):
 
 
 class DummyBot(Player):
+
+    NAMES = ['Niedorzeczny Bóbr',
+             'Zgryźliwa Żmija',
+             'Szybki Sebastian',
+             'Pijany Olek',
+             'Potężna Grochówka',
+             'Smutny Marek',
+             'Wesoły Romek']
+
     def __init__(self, colour, name=None):
-        Player.__init__(self, colour, name)
+        import random
+        n = random.choice(self.NAMES) if name is None else name
+        Player.__init__(self, colour, n)
 
     def move(self, possible_moves, board) -> int:
         import random
@@ -68,5 +79,5 @@ class DummyBot(Player):
 
     def capture(self, possible_moves, board) -> int:
         import random
-        return random.randint(0, len(possible_moves))
+        return random.randint(0, len(possible_moves) - 1)
 
