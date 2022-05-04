@@ -82,15 +82,17 @@ class Checkers:
         if capturing_pawns or capturing_queens:
             pawn_captures = self.get_possible_pawn_captures(capturing_pawns)
             queen_captures = self.get_possible_queen_captures(capturing_queens)
-            captures = self.__get_longest_captures(pawn_captures, queen_captures)
+            captures = self.get_longest_captures(pawn_captures, queen_captures)
             pos = self.current_player.capture(captures, self.board)
-            self.execute_capture(pos, captures)
+            if pos >= 0:
+                self.execute_capture(pos, captures)
         else:
             moving_pawns, moving_queens = self.get_moving_pieces(pieces)
             pawn_moves = self.get_possible_pawn_moves(moving_pawns)
             queen_moves = self.get_possible_queen_moves(moving_queens)
             pos = self.current_player.move(pawn_moves + queen_moves, self.board)
-            self.execute_move(pos, pawn_moves + queen_moves)
+            if pos >= 0:
+                self.execute_move(pos, pawn_moves + queen_moves)
         self.promote_to_queen()
         self.__switch_player()
 
@@ -271,21 +273,22 @@ class Checkers:
             diagonal = self.__diagonal(x, y, direction)
             first_enemy = -1
             enemy = (-1, -1)
-            second_enemy = -1
+            second_obstacle = -1
             for i, (dx, dy) in enumerate(diagonal):
                 cell = self.board[dx][dy]
                 if not cell.is_empty:
-                    if cell.piece.colour != self.current_colour:
-                        if cell not in excluded_cells:
+                    if cell not in excluded_cells:
+                        if cell.piece.colour != self.current_colour:
                             if first_enemy == -1:
                                 first_enemy = i
                                 enemy = (dx, dy)
-                            elif second_enemy == -1:
-                                second_enemy = i
-            if second_enemy == -1:
-                second_enemy = len(diagonal)
+                        elif first_enemy != -1:
+                            if second_obstacle == -1:
+                                second_obstacle = i
+            if second_obstacle == -1:
+                second_obstacle = len(diagonal)
             if first_enemy != -1:
-                landing_pairs += [(enemy, diagonal[first_enemy + 1:second_enemy])]
+                landing_pairs += [(enemy, diagonal[first_enemy + 1:second_obstacle])]
         return landing_pairs
 
     # === CHECKS === -----------------------------------------------------------------------------------------
@@ -385,8 +388,10 @@ class Checkers:
                 if self.board[diag_x][diag_y].piece.colour != self.current_colour:
                     return diag_x, diag_y
 
-    def __get_longest_captures(self, pawn_captures, queen_captures):
+    def get_longest_captures(self, pawn_captures, queen_captures):
         captures = pawn_captures + queen_captures
+        if not captures:
+            return []
         max_len = len(max(captures, key=len))
         return [c for c in captures if len(c) == max_len]
 
@@ -428,6 +433,48 @@ class Checkers:
     @staticmethod
     def alias_from_coordinates(coordinates):
         return 'ABCDEFGH'[coordinates[1]] + '12345678'[coordinates[0]]
+
+    # === API === ------------------------------------------------------------------------
+    class API:
+
+        @staticmethod
+        def all_captures(board, player: Player):
+            checkers = Checkers.API.__default_board(board, player)
+            pieces = checkers.get_pieces()
+            capturing_pawns, capturing_queens = checkers.get_capturing_pieces(pieces)
+            pawn_captures = checkers.get_possible_pawn_captures(capturing_pawns)
+            queen_captures = checkers.get_possible_queen_captures(capturing_queens)
+            captures = checkers.get_longest_captures(pawn_captures, queen_captures)
+            return captures
+
+        @staticmethod
+        def all_moves(board, player: Player):
+            checkers = Checkers.API.__default_board(board, player)
+            pieces = checkers.get_pieces()
+            moving_pawns, moving_queens = checkers.get_moving_pieces(pieces)
+            pawn_moves = checkers.get_possible_pawn_moves(moving_pawns)
+            queen_moves = checkers.get_possible_queen_moves(moving_queens)
+            return pawn_moves + queen_moves
+
+        @staticmethod
+        def execute_move(board, player: Player, move):
+            checkers = Checkers.API.__default_board(board, player)
+            checkers.execute_move(0, [move])
+            return checkers.board
+
+        @staticmethod
+        def execute_capture(board, player: Player, capture):
+            checkers = Checkers.API.__default_board(board, player)
+            checkers.execute_capture(0, [capture])
+            return checkers.board
+
+        @staticmethod
+        def __default_board(board, player: Player):
+            checkers = Checkers.empty_board_checkers()
+            checkers.board = board
+            checkers.current_player = player
+            checkers.current_colour = player.colour
+            return checkers
 
 
 
