@@ -1,3 +1,4 @@
+
 class Color:
 
     END = '\33[0m'
@@ -38,6 +39,4 @@ class Color:
 
 
 if __name__ == '__main__':
-    print(f'{Color.color(255, 200, 0)}RED{Color.END} Heeeee')
-    xs = [1, 2, 3, 4]
-    print(xs[:-1])
+    print(f'{Color.FG.BLUE}Witek{Color.END} {Color.BG.WHITE}Frącek{Color.END}')

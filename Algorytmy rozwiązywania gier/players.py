@@ -1,7 +1,7 @@
 from colors import Color
 import copy
 from estimators import Estimator
-from datetime import time
+from datetime import datetime
 
 
 class Player:
@@ -114,7 +114,7 @@ class MinMaxBot(Player):
     MAX_VALUE = int(1e9)
     MIN_VALUE = int(-1e9)
 
-    def __init__(self, colour, estimator: Estimator, search_depth=3, name=None):
+    def __init__(self, colour, estimator: Estimator, search_depth=3, name=None, time_constraint=int(1e10)):
         import random
         from checkers import Checkers
         n = random.choice(self.NAMES) if name is None else name
@@ -123,12 +123,21 @@ class MinMaxBot(Player):
         self.opposite_colour = Checkers.WHITE if self.colour == Checkers.BLACK else Checkers.BLACK
         self.search_depth = search_depth
         self.estimator = estimator
+        self.time_constraint = time_constraint
 
     def move(self, possible_moves, board) -> int:
-        return self.get_best_move(possible_moves, board)
+        start = datetime.now()
+        pos = self.get_best_move(possible_moves, board)
+        end = datetime.now()
+        print(f'Computed in {(end - start).seconds}s')
+        return pos
 
     def capture(self, possible_moves, board) -> int:
-        return self.get_best_capture(possible_moves, board)
+        start = datetime.now()
+        pos = self.get_best_capture(possible_moves, board)
+        end = datetime.now()
+        print(f'Computed in {(end - start).seconds}s')
+        return pos
 
     def get_best_capture(self, possible_captures, board) -> int:
         if not possible_captures:
@@ -141,13 +150,19 @@ class MinMaxBot(Player):
         for i, capture in enumerate(possible_captures):
             new_board = copy.deepcopy(board)
             new_board = Checkers.API.execute_capture(new_board, self, capture)
+            start = datetime.now()
             estimation = self.min(new_board, self.search_depth)
+            end = datetime.now()
             if not best_captures or estimation == best_result:
                 best_captures.append(i)
             elif estimation > best_result:
                 best_captures = [i]
                 best_result = estimation
+            if (end - start).seconds > self.time_constraint:
+                break
         import random
+        if not best_captures:
+            return random.choice([i for i in range(len(possible_captures))])
         return random.choice(best_captures)
 
     def get_best_move(self, possible_moves, board) -> int:
@@ -161,13 +176,19 @@ class MinMaxBot(Player):
         for i, move in enumerate(possible_moves):
             new_board = copy.deepcopy(board)
             new_board = Checkers.API.execute_move(new_board, self, move)
+            start = datetime.now()
             estimation = self.min(new_board, self.search_depth)
             if not best_moves or estimation == best_result:
                 best_moves.append(i)
             elif estimation > best_result:
                 best_moves = [i]
                 best_result = estimation
+            end = datetime.now()
+            if (end - start).seconds > self.time_constraint:
+                break
         import random
+        if not best_moves:
+            return random.choice([i for i in range(len(possible_moves))])
         return random.choice(best_moves)
 
     def min(self, board, depth) -> int:
@@ -214,7 +235,7 @@ class MinMaxBot(Player):
             for capture in possible_captures:
                 new_board = copy.deepcopy(board)
                 new_board = Checkers.API.execute_capture(new_board, self, capture)
-                estimation = self.max(new_board, depth - 1)
+                estimation = self.min(new_board, depth - 1)
                 if best_result < estimation:
                     best_result = estimation
             return best_result

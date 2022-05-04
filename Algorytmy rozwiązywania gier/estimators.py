@@ -13,11 +13,14 @@ class BasicEstimator(Estimator):
         for i, line in enumerate(board):
             for j, cell in enumerate(line):
                 if not cell.is_empty:
-                    if cell.piece.colour == player.colour:
-                        if isinstance(cell.piece, Pawn):
-                            score += 1
-                        elif isinstance(cell.piece, Queen):
-                            score += 3
+                    mult = 1
+                    if cell.piece.colour != player.colour:
+                        mult = -1
+                    if isinstance(cell.piece, Pawn):
+                        score += 1 * mult
+                    elif isinstance(cell.piece, Queen):
+                        score += 3 * mult
+
         return score
 
 

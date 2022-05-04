@@ -116,6 +116,7 @@ class CapturingPathTest(ut.TestCase):
         checkers.board[4][2].piece = Pawn(Checkers.BLACK, Color.FG.BLACK)
         checkers.print_board()
         cap = checkers.get_possible_queen_captures([(7, 3)])
+        print(cap)
         self.assertEqual(len(cap), 3)
 
     def test_queen_promotion(self):

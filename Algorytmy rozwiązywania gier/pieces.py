@@ -27,7 +27,7 @@ class Pawn(Piece):
     def __init__(self, colour: str, console_colour: str):
         Piece.__init__(self, colour, console_colour)
 
-    def transform_to_queen(self) -> Queen:
+    def transform_to_queen(self) -> Queen: #promote
         return Queen(self.colour, self.console_colour)
 
 

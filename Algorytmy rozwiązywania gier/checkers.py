@@ -31,12 +31,12 @@ class Checkers:
             raise Exception(f'Given players are None values')
         if player1.colour == player2.colour:
             raise Exception(f'Players have the same colour! Given :{player1.colour}')
-        self.player1 = player1
-        self.player2 = player2
+        self.player1 = player1 if player1.colour == self.WHITE else player2
+        self.player2 = player2 if player2.colour == self.BLACK else player1
         if self.player1.colour == start_colour:
-            self.current_player = player1
+            self.current_player = self.player1
         else:
-            self.current_player = player2
+            self.current_player = self.player2
         rows = min(max(pawn_rows, 1), 3)
         for i in range(rows):
             if i % 2 == 0:
@@ -462,12 +462,20 @@ class Checkers:
         def execute_move(board, player: Player, move):
             checkers = Checkers.API.__default_board(board, player)
             checkers.execute_move(0, [move])
+            checkers.promote_to_queen()
             return checkers.board
 
         @staticmethod
         def execute_capture(board, player: Player, capture):
             checkers = Checkers.API.__default_board(board, player)
             checkers.execute_capture(0, [capture])
+            checkers.promote_to_queen()
+            return checkers.board
+
+        @staticmethod
+        def transform_to_queen(board, player: Player):
+            checkers = Checkers.API.__default_board(board, player)
+            checkers.promote_to_queen()
             return checkers.board
 
         @staticmethod
