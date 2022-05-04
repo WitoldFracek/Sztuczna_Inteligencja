@@ -1,16 +1,14 @@
-from players import Player
-from checkers import Checkers
 from pieces import Piece, Pawn, Queen
 
 
 class Estimator:
-    def __call__(self, board, player: Player) -> int:
+    def __call__(self, board, player) -> int:
         return 0
 
 
 class BasicEstimator(Estimator):
 
-    def __call__(self, board, player: Player):
+    def __call__(self, board, player):
         score = 0
         for i, line in enumerate(board):
             for j, cell in enumerate(line):

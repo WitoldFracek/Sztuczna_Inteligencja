@@ -282,6 +282,8 @@ class Checkers:
                             if first_enemy == -1:
                                 first_enemy = i
                                 enemy = (dx, dy)
+                            elif second_obstacle == -1:
+                                second_obstacle = i
                         elif first_enemy != -1:
                             if second_obstacle == -1:
                                 second_obstacle = i
@@ -467,6 +469,19 @@ class Checkers:
             checkers = Checkers.API.__default_board(board, player)
             checkers.execute_capture(0, [capture])
             return checkers.board
+
+        @staticmethod
+        def has_game_ended(board):
+            white = 0
+            black = 0
+            for line in board:
+                for cell in line:
+                    if not cell.is_empty:
+                        if cell.piece.colour == Checkers.WHITE:
+                            white += 1
+                        else:
+                            black += 1
+            return white == 0 or black == 0
 
         @staticmethod
         def __default_board(board, player: Player):
