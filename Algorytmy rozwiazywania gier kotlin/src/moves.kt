@@ -1,15 +1,25 @@
 
 
-data class Move(val xStart: Int,
+open class Move(val xStart: Int,
            val yStart: Int,
            val xEnd: Int,
            val yEnd: Int
-           )
+           ) {
 
-data class Jump(val xStart: Int,
-                val yStart: Int,
-                val xEnd: Int,
-                val yEnd: Int,
-                val xCapture: Int,
-                val yCapture: Int
-                )
+    val startPair: Pair<Int, Int>
+        get() = Pair(xStart, yStart)
+
+    val endPair: Pair<Int, Int>
+        get() = Pair(xEnd, yEnd)
+}
+
+class Jump(xStart: Int,
+           yStart: Int,
+           xEnd: Int,
+           yEnd: Int,
+           val xCapture: Int,
+           val yCapture: Int
+           ): Move(xStart, yStart, xEnd, yEnd) {
+               val capturePair: Pair<Int, Int>
+               get() = Pair(xCapture, yCapture)
+           }
