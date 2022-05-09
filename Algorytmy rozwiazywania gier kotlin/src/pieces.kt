@@ -13,3 +13,12 @@ class Pawn(colour: CheckersColour, consoleColour: String): Piece(colour, console
         return Queen(colour, consoleColour)
     }
 }
+
+fun main(args: Array<String>) {
+    for(i in 1..10) {
+        if(i % 4 == 0) {
+            continue
+        }
+        println(i)
+    }
+}

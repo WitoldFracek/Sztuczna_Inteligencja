@@ -1,10 +1,38 @@
-
+import kotlin.reflect.jvm.internal.impl.util.Check
 
 class CheckersController {
 
     companion object {
 
         private val DIRECTIONS = listOf(Pair(1, 1), Pair(1, -1), Pair(-1, 1), Pair(-1, -1))
+
+        // === CONTROLS ===
+        fun executeCapture(board: Board, capture: List<Jump>): Board {
+            val firstJump = capture[0]
+            val lastJump = capture[capture.size - 1]
+            val movingPiece = board[firstJump.xStart][firstJump.yStart].piece
+            board[firstJump.xStart][firstJump.yStart].piece = null
+            for(jump in capture.subList(1, capture.size)) {
+                val xEnemy = jump.xCapture
+                val yEnemy = jump.yCapture
+                val enemyCell = board[xEnemy][yEnemy]
+                if(enemyCell.piece?.colour == CheckersColour.WHITE) {
+                    board.whiteCount -= 1
+                } else {
+                    board.blackCount -= 1
+                }
+                enemyCell.piece = null
+            }
+            board[lastJump.xEnd][lastJump.yEnd].piece = movingPiece
+            return board
+        }
+
+        fun executeMove(board: Board, move: Move): Board {
+            val movingPiece = board[move.xStart][move.yStart].piece
+            board[move.xStart][move.yStart].piece = null
+            board[move.xEnd][move.yEnd].piece = movingPiece
+            return board
+        }
 
         // === PIECE ACCESSORS ===
         fun getPieces(board: Board, colour: CheckersColour): List<Pair<Int, Int>> {
@@ -55,6 +83,158 @@ class CheckersController {
                 }
             }
             return Pair(movingPawns, movingQueens)
+        }
+
+        fun getPossiblePawnCaptures(board: Board, capturingPawns: List<Pair<Int, Int>>, colour: CheckersColour): List<List<Jump>> {
+            val paths = mutableListOf<List<Jump>>()
+            for(pawn in capturingPawns) {
+                val storePiece = board[pawn.first][pawn.second].piece
+                board[pawn.first][pawn.second].piece = null
+                val sol = mutableListOf<List<Jump>>()
+                getPawnCapturePath(board, pawn, colour, mutableListOf(), mutableListOf(), sol)
+                paths.addAll(sol.toList())
+                board[pawn.first][pawn.second].piece = storePiece
+            }
+            if(paths.isEmpty()) {
+                return paths
+            }
+            val maxLen = paths.maxByOrNull{ it.size }!!.size
+            val ret = mutableListOf<List<Jump>>()
+            for(path in paths) {
+                if(path.size == maxLen) {
+                    ret.add(path)
+                }
+            }
+            return ret
+        }
+
+        fun getPossibleQueenCaptures(board: Board, capturingQueens: List<Pair<Int, Int>>, colour: CheckersColour): List<List<Jump>> {
+            val paths = mutableListOf<List<Jump>>()
+            for(queen in capturingQueens) {
+                val storeQueen = board[queen.first][queen.second].piece
+                board[queen.first][queen.second].piece = null
+                val sol = mutableListOf<List<Jump>>()
+                getQueenCapturePath(board, queen, colour, mutableListOf(), mutableListOf(), sol)
+                paths.addAll(sol.toList())
+                board[queen.first][queen.second].piece = storeQueen
+            }
+            if(paths.isEmpty()) {
+                return paths
+            }
+            val maxLen = paths.maxByOrNull{ it.size }!!.size
+            val ret = mutableListOf<List<Jump>>()
+            for(path in paths) {
+                if(path.size == maxLen) {
+                    ret.add(path)
+                }
+            }
+            return ret
+        }
+
+        fun getPawnCapturePath(board: Board,
+                               pawn: Pair<Int, Int>,
+                               colour: CheckersColour,
+                               jumpedOver: MutableList<Cell>,
+                               acc: MutableList<Jump>,
+                               solutions: MutableList<List<Jump>>) {
+            if(canPawnCapture(board, pawn, colour, excludedCells=jumpedOver)) {
+                val directions = getPawnCaptureDirections(board, pawn, colour, excludedCells=jumpedOver)
+                for(direction in directions) {
+                    val jump = Jump(pawn.first, pawn.second,
+                    pawn.first + 2 * direction.first,
+                    pawn.second + 2 * direction.second,
+                    pawn.first + direction.first,
+                    pawn.second + direction.second)
+                    acc.add(jump)
+                    val jumpedOverCopy = jumpedOver.toMutableList()
+                    val accCopy = acc.toMutableList()
+                    jumpedOverCopy.add(board[jump.xCapture][jump.yCapture])
+                    getPawnCapturePath(board, Pair(jump.xEnd, jump.yEnd), colour, jumpedOverCopy, accCopy, solutions)
+                }
+            } else {
+                solutions.add(acc)
+            }
+        }
+
+        fun getQueenCapturePath(board: Board,
+                                queen: Pair<Int, Int>,
+                                colour: CheckersColour,
+                                jumpedOver: MutableList<Cell>,
+                                acc: MutableList<Jump>,
+                                solutions: MutableList<List<Jump>>) {
+            if(canQueenCapture(board, queen, colour, excludedCells=jumpedOver)) {
+                val landingSpots = queenLandingSpots(board, queen, colour, excludedCells=jumpedOver)
+                for(jump in landingSpots) {
+                    val xEnemy = landingSpots[0].xCapture
+                    val yEnemy = landingSpots[0].yCapture
+                    val cell = board[xEnemy][yEnemy]
+                    if(cell !in jumpedOver) {
+                        jumpedOver.add(cell)
+                    }
+                    val jumpedOverCopy = jumpedOver.toMutableList()
+                    val accCopy = acc.toMutableList()
+                    accCopy.add(jump)
+                    getQueenCapturePath(board, Pair(jump.xEnd, jump.yEnd), colour, jumpedOverCopy, accCopy, solutions)
+                }
+            } else {
+                solutions.add(acc)
+            }
+        }
+
+        fun getPossiblePawnMoves(board: Board, movingPawns: List<Pair<Int, Int>>, colour: CheckersColour): List<Move> {
+            val moves = mutableListOf<Move>()
+            for(pawn in movingPawns) {
+                val path = getPawnMovePath(board, pawn, colour)
+                moves.addAll(path)
+            }
+            return moves
+        }
+
+        fun getPawnMovePath(board: Board, pawn: Pair<Int, Int>, colour: CheckersColour): List<Move> {
+            val moves = mutableListOf<Move>()
+            if(colour == CheckersColour.WHITE) {
+                if(isMovePossible(board, pawn, Pair(1, -1))) {
+                    moves.add(Move(pawn.first, pawn.second, pawn.first + 1, pawn.second - 1))
+                }
+                if(isMovePossible(board, pawn, Pair(1, 1))) {
+                    moves.add(Move(pawn.first, pawn.second, pawn.first + 1, pawn.second + 1))
+                }
+            } else {
+                if(isMovePossible(board, pawn, Pair(-1, -1))) {
+                    moves.add(Move(pawn.first, pawn.second, pawn.first - 1, pawn.second - 1))
+                }
+                if(isMovePossible(board, pawn, Pair(-1, 1))) {
+                    moves.add(Move(pawn.first, pawn.second, pawn.first - 1, pawn.second + 1))
+                }
+            }
+            return moves
+        }
+
+        fun getPossibleQueenMoves(board: Board, movingQueens: List<Pair<Int, Int>>): List<Move> {
+            val moves = mutableListOf<Move>()
+            for(queen in movingQueens) {
+                val path = getQueenMovePath(board, queen)
+                moves.addAll(path)
+            }
+            return moves
+        }
+
+        fun getQueenMovePath(board: Board, queen: Pair<Int, Int>): List<Move> {
+            val moves = mutableListOf<Move>()
+            for(direction in DIRECTIONS) {
+                val diagonal = diagonal(board, queen, direction)
+                var obstacleFound = false
+                for(pos in diagonal) {
+                    if(!obstacleFound) {
+                        if(board[pos.first][pos.second].isEmpty) {
+                            moves.add(Move(queen.first, queen.second, pos.first, pos.second))
+                        } else {
+                            obstacleFound = true
+                        }
+                    }
+                }
+            }
+            return moves
         }
 
         fun getPawnCaptureDirections(board: Board,
@@ -263,6 +443,40 @@ class CheckersController {
                 }
             }
             return ret
+        }
+
+        fun queenLandingSpots(board: Board, queen: Pair<Int, Int>, colour: CheckersColour, excludedCells: List<Cell>): List<Jump> {
+            val landingSpots = mutableListOf<Jump>()
+            for(direction in DIRECTIONS) {
+                val diagonal = diagonal(board, queen, direction)
+                var enemyIndex = -1
+                var obstacleIndex = -1
+                for((i, pos) in diagonal.withIndex()) {
+                    if(obstacleIndex != -1) {
+                        break
+                    }
+                    val cell = board[pos.first][pos.second]
+                    if(cell in excludedCells) {
+                        continue
+                    }
+                    if(!cell.isEmpty) {
+                        if(cell.piece?.colour != colour) {
+                            if(enemyIndex == -1) {
+                                enemyIndex = i
+                            } else {
+                                obstacleIndex = i
+                            }
+                        } else {
+                            obstacleIndex = i
+                        }
+                    } else if(enemyIndex != -1) {
+                        landingSpots.add(Jump(queen.first, queen.second,
+                        pos.first, pos.second,
+                        diagonal[enemyIndex].first, diagonal[enemyIndex].second))
+                    }
+                }
+            }
+            return landingSpots
         }
 
         fun aliasFromCoordinates(x: Int, y: Int): String {

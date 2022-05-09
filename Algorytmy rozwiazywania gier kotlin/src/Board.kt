@@ -2,6 +2,7 @@ class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null) {
     val board: List<List<Cell>>
     var whiteCount: Int
     var blackCount: Int
+    var idleMoves: Int = 0
 
     init {
         if(newBoard != null){
@@ -69,6 +70,18 @@ class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null) {
             tempBoard.add(row)
         }
         return tempBoard
+    }
+
+    fun copy(): Board {
+        val newBoard = mutableListOf<MutableList<Cell>>()
+        for(line in board) {
+            val row = mutableListOf<Cell>()
+            for(cell in line) {
+                row.add(Cell(cell.alias, cell.piece))
+            }
+            newBoard.add(row)
+        }
+        return Board(newBoard=newBoard)
     }
 }
 

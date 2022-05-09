@@ -1,3 +1,14 @@
 enum class CheckersColour {
-    WHITE, BLACK
+    WHITE {
+        override fun oppositeColour(): CheckersColour {
+            return BLACK
+        }
+          },
+    BLACK {
+        override fun oppositeColour(): CheckersColour {
+            return WHITE
+        }
+    };
+
+    abstract fun oppositeColour(): CheckersColour
 }

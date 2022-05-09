@@ -19,11 +19,11 @@ fun <T> getCorrectInput(list: List<T>): Int {
 
 
 open class Player(open val name: String = "${Player::class.simpleName}") {
-    open fun move(possibleMoves: List<Move>): Int {
+    open fun move(possibleMoves: List<Move>, board: Board): Int {
         return 0
     }
 
-    open fun capture(possibleCaptures: List<List<Jump>>): Int {
+    open fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
         return 0
     }
 
@@ -33,7 +33,7 @@ open class Player(open val name: String = "${Player::class.simpleName}") {
 }
 
 class Human(name: String): Player(name) {
-    override fun move(possibleMoves: List<Move>): Int {
+    override fun move(possibleMoves: List<Move>, board: Board): Int {
         println("${Colour.colour(153, 255, 51)}${name} moves:${Colour.END}")
         for((i, move) in possibleMoves.withIndex()){
             val start = CheckersController.aliasFromCoordinates(move.xStart, move.yStart)
@@ -43,7 +43,7 @@ class Human(name: String): Player(name) {
         return getCorrectInput(possibleMoves)
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
         println("${Colour.colour(153, 255, 51)}${name} moves:${Colour.END}")
         for((i, jumps) in possibleCaptures.withIndex()) {
             val startJump = jumps[0]
@@ -63,11 +63,11 @@ class DummyBot(name: String=""): Player(name) {
 
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
-    override fun move(possibleMoves: List<Move>): Int {
+    override fun move(possibleMoves: List<Move>, board: Board): Int {
         return (Math.random() * possibleMoves.size).toInt()
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
         return (Math.random() * possibleCaptures.size).toInt()
     }
 
@@ -87,6 +87,6 @@ class DummyBot(name: String=""): Player(name) {
 
 fun main(args: Array<String>) {
     val h = Human("Witek")
-    h.move(arrayListOf(Move(0, 0, 1, 1)))
-    h.capture(arrayListOf(arrayListOf(Jump(0, 0, 2, 2, 1, 1), Jump(2, 2, 4, 4, 3, 3))))
+    h.move(arrayListOf(Move(0, 0, 1, 1)), Board())
+    h.capture(arrayListOf(arrayListOf(Jump(0, 0, 2, 2, 1, 1), Jump(2, 2, 4, 4, 3, 3))), Board())
 }
