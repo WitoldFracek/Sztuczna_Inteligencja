@@ -12,7 +12,7 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
     fun play() {
         while(!CheckersController.hasGameEnded(board, currentColour)) {
             CheckersController.printBoard(board, lastMove, player1, player2)
-            //one move
+            oneMove()
         }
         switchPlayer()
         CheckersController.printBoard(board, lastMove, player1, player2)
@@ -50,6 +50,7 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
             allMoves.addAll(queenMoves)
             val pos = currentPlayer.move(allMoves, board)
             val playerChoice = allMoves[pos]
+            lastMove = mutableListOf()
             lastMove.add(playerChoice.startPair)
             lastMove.add(playerChoice.endPair)
             board = CheckersController.executeMove(board, playerChoice)

@@ -12,7 +12,7 @@ class CheckersController {
             val lastJump = capture[capture.size - 1]
             val movingPiece = board[firstJump.xStart][firstJump.yStart].piece
             board[firstJump.xStart][firstJump.yStart].piece = null
-            for(jump in capture.subList(1, capture.size)) {
+            for(jump in capture) { //.subList(1, capture.size)) {
                 val xEnemy = jump.xCapture
                 val yEnemy = jump.yCapture
                 val enemyCell = board[xEnemy][yEnemy]
@@ -165,8 +165,8 @@ class CheckersController {
             if(canQueenCapture(board, queen, colour, excludedCells=jumpedOver)) {
                 val landingSpots = queenLandingSpots(board, queen, colour, excludedCells=jumpedOver)
                 for(jump in landingSpots) {
-                    val xEnemy = landingSpots[0].xCapture
-                    val yEnemy = landingSpots[0].yCapture
+                    val xEnemy = jump.xCapture
+                    val yEnemy = jump.yCapture
                     val cell = board[xEnemy][yEnemy]
                     if(cell !in jumpedOver) {
                         jumpedOver.add(cell)
@@ -324,17 +324,20 @@ class CheckersController {
                                 queen: Pair<Int, Int>,
                                 direction: Pair<Int, Int>,
                                 currentColour: CheckersColour,
-                                excludedCells: List<Cell> = listOf()):Boolean {
+                                excludedCells: List<Cell> = listOf()): Boolean {
             val xd = direction.first
             val yd = direction.second
             val diagonal = diagonal(board, queen, direction)
-            for(pair in diagonal.subList(0, diagonal.size - 1)) {
-                val cell = board[pair.first][pair.second]
+            if(diagonal.size < 2) {
+                return false
+            }
+            for(pos in diagonal.subList(0, diagonal.size - 1)) {
+                val cell = board[pos.first][pos.second]
                 if(cell in excludedCells) {
                     return false
                 }
                 if(!cell.isEmpty) {
-                    if(board[queen.first + xd][queen.second + yd].isEmpty) {
+                    if(board[pos.first + xd][pos.second + yd].isEmpty) {
                         if(currentColour != cell.piece?.colour) {
                             return true
                         }
@@ -384,7 +387,7 @@ class CheckersController {
             }
             for(cell in board[board.board.size - 1]) {
                 if(!cell.isEmpty) {
-                    if(cell.piece?.colour == CheckersColour.BLACK) {
+                    if(cell.piece?.colour == CheckersColour.WHITE) {
                         if(cell.piece is Pawn) {
                             val pawn = cell.piece as Pawn
                             cell.piece = pawn.promote()
@@ -520,6 +523,7 @@ class CheckersController {
                 }
                 println(s)
             }
+            println("   A  B  C  D  E  F  G  H \n")
         }
     }
 }

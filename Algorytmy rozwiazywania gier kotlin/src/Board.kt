@@ -72,6 +72,11 @@ class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null) {
         return tempBoard
     }
 
+    fun empty(): Board {
+        val emptyBoard = emptyBoard()
+        return Board(newBoard=emptyBoard)
+    }
+
     fun copy(): Board {
         val newBoard = mutableListOf<MutableList<Cell>>()
         for(line in board) {
