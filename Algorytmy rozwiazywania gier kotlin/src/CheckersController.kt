@@ -85,6 +85,28 @@ class CheckersController {
             return Pair(movingPawns, movingQueens)
         }
 
+        fun getAllCaptures(board: Board, colour: CheckersColour): List<List<Jump>> {
+            val pieces = getPieces(board, colour)
+            val capturingPieces = getCapturingPieces(board, pieces, colour)
+            val pawnCaptures = getPossiblePawnCaptures(board, capturingPieces.first, colour)
+            val queenCaptures = getPossibleQueenCaptures(board, capturingPieces.second, colour)
+            val allCaptures = mutableListOf<List<Jump>>()
+            allCaptures.addAll(pawnCaptures)
+            allCaptures.addAll(queenCaptures)
+            return allCaptures
+        }
+
+        fun getAllMoves(board: Board, colour: CheckersColour): List<Move> {
+            val pieces = getPieces(board, colour)
+            val movingPieces = getMovingPieces(board, pieces, colour)
+            val pawnMoves = getPossiblePawnMoves(board, movingPieces.first, colour)
+            val queenMoves = getPossibleQueenMoves(board, movingPieces.second)
+            val allMoves = mutableListOf<Move>()
+            allMoves.addAll(pawnMoves)
+            allMoves.addAll(queenMoves)
+            return allMoves
+        }
+
         fun getPossiblePawnCaptures(board: Board, capturingPawns: List<Pair<Int, Int>>, colour: CheckersColour): List<List<Jump>> {
             val paths = mutableListOf<List<Jump>>()
             for(pawn in capturingPawns) {

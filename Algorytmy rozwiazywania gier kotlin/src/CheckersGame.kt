@@ -9,6 +9,11 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
     private var currentColour = startColour
     private val directions = listOf(Pair(1, 1), Pair(1, -1), Pair(-1, 1), Pair(-1, -1))
 
+    init {
+        player1.colour = CheckersColour.WHITE
+        player2.colour = CheckersColour.BLACK
+    }
+
     fun play() {
         while(!CheckersController.hasGameEnded(board, currentColour)) {
             CheckersController.printBoard(board, lastMove, player1, player2)
