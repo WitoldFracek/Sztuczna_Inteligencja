@@ -11,6 +11,10 @@ open class Move(val xStart: Int,
 
     val endPair: Pair<Int, Int>
         get() = Pair(xEnd, yEnd)
+
+    override fun toString(): String {
+        return "${CheckersController.aliasFromCoordinates(xStart, yStart)}-${CheckersController.aliasFromCoordinates(xEnd, yEnd)}"
+    }
 }
 
 class Jump(xStart: Int,

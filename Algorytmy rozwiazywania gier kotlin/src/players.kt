@@ -98,67 +98,114 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
 
     override fun move(possibleMoves: List<Move>, board: Board): Int {
         val bestMoves = mutableListOf<Int>()
-        val maximising = if(colour == CheckersColour.WHITE) { true } else { false }
-        var bestEval = if(maximising) { Int.MIN_VALUE } else { Int.MAX_VALUE }
-        println(bestEval)
+        var bestEval = Int.MIN_VALUE
         val startTime = currentTimeMillis()
         for((i, move) in possibleMoves.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeMove(newBoard, move)
-            val estimator = minmax(newBoard, searchDepth, colour, maximising)
-            if(maximising and (estimator > bestEval)) {
-                bestEval = estimator
+            val eval = minmax(newBoard, searchDepth, colour, true)
+            println("$move eval: $eval")
+            if(eval > bestEval) {
+                bestEval = eval
                 bestMoves.clear()
                 bestMoves.add(i)
-            } else if(!maximising and (estimator < bestEval)) {
-                bestEval = estimator
-                bestMoves.clear()
-                bestMoves.add(i)
-            } else if(estimator == bestEval) {
+            } else if(eval == bestEval) {
                 bestMoves.add(i)
             }
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimations for $colour is $bestEval")
         return bestMoves[(Math.random() * bestMoves.size).toInt()]
     }
 
     override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
         val bestCaptures = mutableListOf<Int>()
-        val maximising = if(colour == CheckersColour.WHITE) { true } else { false }
-        var bestEval = if(maximising) { Int.MIN_VALUE } else { Int.MAX_VALUE }
+        var bestEval = Int.MIN_VALUE
         val startTime = currentTimeMillis()
         for((i, captureList) in possibleCaptures.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeCapture(newBoard, captureList)
-            val estimator = minmax(newBoard, searchDepth, colour, maximising)
-            if(maximising and (estimator > bestEval)) {
-                bestEval = estimator
+            val eval = minmax(newBoard, searchDepth, colour, true)
+            println("$captureList eval: $eval")
+            if(eval > bestEval) {
+                bestEval = eval
                 bestCaptures.clear()
                 bestCaptures.add(i)
-            } else if(!maximising and (estimator < bestEval)) {
-                bestEval = estimator
-                bestCaptures.clear()
-                bestCaptures.add(i)
-            } else if(estimator == bestEval) {
+            } else if(eval == bestEval) {
                 bestCaptures.add(i)
             }
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimations for $colour is $bestEval")
         return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
     }
 
+//    override fun move(possibleMoves: List<Move>, board: Board): Int {
+//        val bestMoves = mutableListOf<Int>()
+//        val maximising = if(colour == CheckersColour.WHITE) { true } else { false }
+//        var bestEval = if(maximising) { Int.MIN_VALUE } else { Int.MAX_VALUE }
+//        val startTime = currentTimeMillis()
+//        for((i, move) in possibleMoves.withIndex()) {
+//            var newBoard = board.copy()
+//            newBoard = CheckersController.executeMove(newBoard, move)
+//            val estimator = minmax(newBoard, searchDepth, colour, maximising)
+//            if(maximising and (estimator > bestEval)) {
+//                bestEval = estimator
+//                bestMoves.clear()
+//                bestMoves.add(i)
+//            } else if(!maximising and (estimator < bestEval)) {
+//                bestEval = estimator
+//                bestMoves.clear()
+//                bestMoves.add(i)
+//            } else if(estimator == bestEval) {
+//                bestMoves.add(i)
+//            }
+//        }
+//        val endTime = currentTimeMillis()
+//        println("Computed in ${(endTime - startTime) / 1000}s")
+//        println("Best estimations for $colour is $bestEval")
+//        return bestMoves[(Math.random() * bestMoves.size).toInt()]
+//    }
+
+//    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+//        val bestCaptures = mutableListOf<Int>()
+//        val maximising = if(colour == CheckersColour.WHITE) { true } else { false }
+//        var bestEval = if(maximising) { Int.MIN_VALUE } else { Int.MAX_VALUE }
+//        val startTime = currentTimeMillis()
+//        for((i, captureList) in possibleCaptures.withIndex()) {
+//            var newBoard = board.copy()
+//            newBoard = CheckersController.executeCapture(newBoard, captureList)
+//            val estimator = minmax(newBoard, searchDepth, colour, maximising)
+//            if(maximising and (estimator > bestEval)) {
+//                bestEval = estimator
+//                bestCaptures.clear()
+//                bestCaptures.add(i)
+//            } else if(!maximising and (estimator < bestEval)) {
+//                bestEval = estimator
+//                bestCaptures.clear()
+//                bestCaptures.add(i)
+//            } else if(estimator == bestEval) {
+//                bestCaptures.add(i)
+//            }
+//        }
+//        val endTime = currentTimeMillis()
+//        println("Computed in ${(endTime - startTime) / 1000}s")
+//        println("Best estimations for $colour is $bestEval")
+//        return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
+//    }
+
     fun minmax(board: Board, depth: Int, colour: CheckersColour, maximising: Boolean): Int {
         if(CheckersController.hasGameEnded(board, colour)) {
-            return if(maximising) {
-                Int.MIN_VALUE + searchDepth - depth
+            return if(colour == this.colour) {
+                Int.MIN_VALUE
             } else {
-                Int.MAX_VALUE - searchDepth + depth
+                Int.MAX_VALUE
             }
         }
         if(depth <= 0) {
-            return estimator(board, colour)
+            return estimator(board, this.colour)
         }
         val allCaptures = CheckersController.getAllCaptures(board, colour)
         if(allCaptures.isNotEmpty()) {
@@ -167,8 +214,8 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
                 for(capture in allCaptures) {
                     var newBoard = board.copy()
                     newBoard = CheckersController.executeCapture(newBoard, capture)
-                    val estimation = minmax(newBoard, depth - 1, colour.oppositeColour(), false)
-                    maxEval = max(maxEval, estimation)
+                    val eval = minmax(newBoard, depth - 1, colour.oppositeColour(), false)
+                    maxEval = max(maxEval, eval)
                 }
                 return maxEval
             } else {
@@ -176,8 +223,8 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
                 for(capture in allCaptures) {
                     var newBoard = board.copy()
                     newBoard = CheckersController.executeCapture(newBoard, capture)
-                    val estimation = minmax(newBoard, depth - 1, colour.oppositeColour(), true)
-                    minEval = min(minEval, estimation)
+                    val eval = minmax(newBoard, depth - 1, colour.oppositeColour(), true)
+                    minEval = min(minEval, eval)
                 }
                 return minEval
             }
@@ -188,8 +235,8 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
             for(move in allMoves) {
                 var newBoard = board.copy()
                 newBoard = CheckersController.executeMove(newBoard, move)
-                val estimation = minmax(newBoard, depth - 1, colour.oppositeColour(), false)
-                maxEval = max(maxEval, estimation)
+                val eval = minmax(newBoard, depth - 1, colour.oppositeColour(), false)
+                maxEval = max(maxEval, eval)
             }
             return maxEval
         } else {
@@ -197,8 +244,8 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
             for(move in allMoves) {
                 var newBoard = board.copy()
                 newBoard = CheckersController.executeMove(newBoard, move)
-                val estimation = minmax(newBoard, depth - 1, colour.oppositeColour(), true)
-                minEval = min(minEval, estimation)
+                val eval = minmax(newBoard, depth - 1, colour.oppositeColour(), true)
+                minEval = min(minEval, eval)
             }
             return minEval
         }

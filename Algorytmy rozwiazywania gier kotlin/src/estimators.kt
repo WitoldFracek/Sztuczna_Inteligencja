@@ -7,17 +7,16 @@ open class Estimator {
 }
 
 open class CountEstimator(private val pawnWeight: Double = 1.0, private val queenWeight: Double = 3.0): Estimator() {
-    override operator fun invoke(board: Board, colour: CheckersColour): Int {
+    override operator fun invoke(board: Board, maximisingColour: CheckersColour): Int {
         var score = 0.0
         for(line in board.board) {
             for(cell in line) {
                 if(!cell.isEmpty) {
-                    val sign = if(cell.piece?.colour == CheckersColour.WHITE) {
+                    val sign = if(cell.piece?.colour == maximisingColour) {
                         1
                     } else {
                         -1
                     }
-
                     if(cell.piece is Pawn) {
                         score += sign * pawnWeight
                     } else if(cell.piece is Queen) {

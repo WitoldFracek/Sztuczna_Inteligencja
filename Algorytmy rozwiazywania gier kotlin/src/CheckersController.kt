@@ -363,6 +363,8 @@ class CheckersController {
                         if(currentColour != cell.piece?.colour) {
                             return true
                         }
+                    } else {
+                        return false
                     }
                 }
 
