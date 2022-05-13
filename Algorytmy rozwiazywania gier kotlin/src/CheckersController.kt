@@ -12,7 +12,7 @@ class CheckersController {
             val lastJump = capture[capture.size - 1]
             val movingPiece = board[firstJump.xStart][firstJump.yStart].piece
             board[firstJump.xStart][firstJump.yStart].piece = null
-            for(jump in capture) { //.subList(1, capture.size)) {
+            for(jump in capture) {
                 val xEnemy = jump.xCapture
                 val yEnemy = jump.yCapture
                 val enemyCell = board[xEnemy][yEnemy]
@@ -24,16 +24,26 @@ class CheckersController {
                 enemyCell.piece = null
             }
             board[lastJump.xEnd][lastJump.yEnd].piece = movingPiece
-            board.idleMoves = 0
+            when(movingPiece?.colour) {
+                CheckersColour.WHITE -> board.idleWhiteMoves = 0
+                CheckersColour.BLACK -> board.idleBlackMoves = 0
+                else -> {}
+            }
             return board
         }
 
         fun executeMove(board: Board, move: Move): Board {
             val movingPiece = board[move.xStart][move.yStart].piece
             if(movingPiece is Queen) {
-                board.idleMoves += 1
+                if(movingPiece.colour == CheckersColour.WHITE) {
+                    board.idleWhiteMoves += 1
+                } else {
+                    board.idleBlackMoves += 1
+                }
+
             } else {
-                board.idleMoves = 0
+                board.idleWhiteMoves = 0
+                board.idleBlackMoves = 0
             }
             board[move.xStart][move.yStart].piece = null
             board[move.xEnd][move.yEnd].piece = movingPiece
@@ -429,13 +439,22 @@ class CheckersController {
         }
 
         fun hasGameEnded(board: Board, colour: CheckersColour): Boolean {
-            if(colour == CheckersColour.WHITE) {
-                if(board.whiteCount == 0) {
-                    return true
+            when(colour) {
+                CheckersColour.WHITE -> {
+                    if(board.whiteCount == 0) {
+                        return true
+                    }
+                    if(board.idleWhiteMoves > board.idleMoves) {
+                        return true
+                    }
                 }
-            } else {
-                if(board.blackCount == 0) {
-                    return true
+                CheckersColour.BLACK -> {
+                    if(board.blackCount == 0) {
+                        return true
+                    }
+                    if(board.idleBlackMoves > board.idleMoves) {
+                        return true
+                    }
                 }
             }
             val pieces = getPieces(board, colour)

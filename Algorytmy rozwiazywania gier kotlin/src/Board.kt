@@ -1,8 +1,10 @@
-class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null) {
+class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null, idle: Int = 8) {
     val board: List<List<Cell>>
+    val idleMoves = idle
     var whiteCount: Int
     var blackCount: Int
-    var idleMoves: Int = 0
+    var idleWhiteMoves: Int = 0
+    var idleBlackMoves: Int = 0
 
     init {
         if(newBoard != null){
@@ -86,7 +88,10 @@ class Board(rows: Int = 2, newBoard: List<List<Cell>>? = null) {
             }
             newBoard.add(row)
         }
-        return Board(newBoard=newBoard)
+        val b = Board(newBoard=newBoard)
+        b.idleBlackMoves = this.idleBlackMoves
+        b.idleWhiteMoves = this.idleWhiteMoves
+        return b
     }
 }
 
