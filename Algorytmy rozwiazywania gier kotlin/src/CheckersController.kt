@@ -24,11 +24,17 @@ class CheckersController {
                 enemyCell.piece = null
             }
             board[lastJump.xEnd][lastJump.yEnd].piece = movingPiece
+            board.idleMoves = 0
             return board
         }
 
         fun executeMove(board: Board, move: Move): Board {
             val movingPiece = board[move.xStart][move.yStart].piece
+            if(movingPiece is Queen) {
+                board.idleMoves += 1
+            } else {
+                board.idleMoves = 0
+            }
             board[move.xStart][move.yStart].piece = null
             board[move.xEnd][move.yEnd].piece = movingPiece
             return board
