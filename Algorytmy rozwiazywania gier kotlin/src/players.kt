@@ -92,7 +92,10 @@ class DummyBot(name: String=""): Player(name) {
 
 }
 
-class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Player(name) {
+abstract class Bot(name: String): Player(name) {
+}
+
+class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Bot(name) {
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
     constructor(estimator: Estimator, searchDepth: Int=3): this("", searchDepth, estimator)
@@ -244,7 +247,7 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
     }
 }
 
-class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): Player(name) {
+class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): Bot(name) {
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
     constructor(estimator: Estimator, searchDepth: Int=3): this("", searchDepth, estimator)

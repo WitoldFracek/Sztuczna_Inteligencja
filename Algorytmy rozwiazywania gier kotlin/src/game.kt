@@ -1,3 +1,4 @@
+import GUI.CheckersGameGUI
 import kotlin.reflect.jvm.internal.impl.util.Check
 
 fun setLevel(arg: String): Int {
@@ -19,6 +20,10 @@ fun main(args: Array<String>) {
     val minMaxBot1 = MinMaxBot("White", searchDepth=5, AreaEstimator(3, 2, 1))
     val minMaxBot2 = MinMaxBot("", searchDepth=6, AreaEstimator(3, 2, 1))
     val alphaBetaBot1 = AlphaBetaBot("", searchDepth=9, AreaEstimator(3, 2, 1))
-    val game = CheckersGame(human, alphaBetaBot1, pawnRows=3, startColour=CheckersColour.WHITE, allowFirstRandom=true)
-    game.play()
+    val game = CheckersGameGUI(human, alphaBetaBot1, pawnRows=2, allowFirstRandom=true, 70)
+    println("OK")
+    game.start()
+    println("Finished")
+//    val game = CheckersGame(human, alphaBetaBot1, pawnRows=3, startColour=CheckersColour.WHITE, allowFirstRandom=true)
+//    game.play()
 }

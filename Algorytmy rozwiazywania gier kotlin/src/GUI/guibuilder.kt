@@ -2,6 +2,7 @@ package GUI
 import AlphaBetaBot
 import AreaEstimator
 import Board
+import CheckersColour
 import CheckersController
 import CheckersGame
 import DummyBot
@@ -14,11 +15,10 @@ import java.awt.GridBagLayout
 import java.awt.GridLayout
 import javax.swing.*
 
-class GUIController(gameController: CheckersGame, fieldSize: Int) {
+class GUIController(fieldSize: Int) {
     val mainFrame = JFrame("Checkers")
     val boardPanel = CheckeredBoard(fieldSize)
     val presenterPanel = PresenterPanel((boardPanel.size.width * 0.5).toInt() * 0, boardPanel.size.height)
-    val controller = gameController
 
     init {
         mainFrame.add(boardPanel)
@@ -29,49 +29,35 @@ class GUIController(gameController: CheckersGame, fieldSize: Int) {
         mainFrame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
     }
 
-    fun update(board: Board) {
+    fun update(board: Board, lastMove: List<Pair<Int, Int>> = listOf()) {
         for((i, line) in board.board.withIndex()) {
             for((j, cell) in line.withIndex()) {
-                boardPanel.buttons[i][j].text = if(cell.isEmpty){
-                    ""
+                boardPanel.buttons[i][j].background = boardPanel.buttons[i][j].originalColor
+                boardPanel.buttons[i][j].icon = if(cell.isEmpty) {
+                    null
                 } else if(cell.piece is Pawn) {
-                    "P"
+                    if(cell.piece?.colour == CheckersColour.WHITE) {
+                        boardPanel.images["white pawn"]
+                    } else {
+                        boardPanel.images["black pawn"]
+                    }
                 } else {
-                    "Q"
-                }
-                boardPanel.buttons[i][j].foreground = if(cell.isEmpty) {
-                    Color.RED
-                } else if(cell.piece?.colour == CheckersColour.BLACK) {
-                    Color.BLACK
-                } else {
-                    Color.WHITE
+                    if(cell.piece?.colour == CheckersColour.WHITE) {
+                        boardPanel.images["white queen"]
+                    } else {
+                        boardPanel.images["black queen"]
+                    }
                 }
             }
         }
+        for((x, y) in lastMove) {
+            boardPanel.buttons[x][y].background = Color.YELLOW
+        }
     }
-}
 
-fun main() {
-    val human = Human("Witek")
-    val dummyBot1 = DummyBot(name="Dummy")
-    val dummyBot2 = DummyBot()
-    val minMaxBot1 = MinMaxBot("White", searchDepth=5, AreaEstimator(3, 2, 1))
-    val minMaxBot2 = MinMaxBot("", searchDepth=6, AreaEstimator(3, 2, 1))
-    val alphaBetaBot1 = AlphaBetaBot("", searchDepth=9, AreaEstimator(3, 2, 1))
-    val game = CheckersGame(human, alphaBetaBot1, pawnRows=3, startColour=CheckersColour.WHITE, allowFirstRandom=true)
-    var gui: GUIController? = null
-    val thread = Thread{
-        gui = GUIController(game, 80)
+    fun markMovingPieces(movingPieces: List<Pair<Int, Int>>) {
+        for((x, y) in movingPieces) {
+            boardPanel.buttons[x][y].background = Color.GREEN
+        }
     }
-    thread.start()
-    Thread.sleep(1000)
-    println(gui?.boardPanel?.buttons)
-    while(!CheckersController.hasGameEnded(game.board, game.colour)) {
-        CheckersController.printBoard(game.board, game.move, game.playerOne, game.playerTwo)
-        game.oneMove()
-        gui?.update(game.board)
-    }
-    game.switchPlayer()
-
-
 }

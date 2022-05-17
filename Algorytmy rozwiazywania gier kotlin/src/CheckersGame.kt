@@ -1,15 +1,17 @@
-class CheckersGame(val player1: Player, val player2: Player,
-                   pawnRows: Int, startColour: CheckersColour = CheckersColour.WHITE,
-                    allowFirstRandom: Boolean = false) {
+import java.lang.Integer.min
+
+open class CheckersGame(val player1: Player, val player2: Player,
+                        pawnRows: Int, startColour: CheckersColour = CheckersColour.WHITE,
+                        allowFirstRandom: Boolean = false) {
     var board = Board(pawnRows)
-    private var lastMove = mutableListOf<Pair<Int, Int>>()
-    private var currentPlayer = if(startColour == CheckersColour.WHITE) {
+    protected var lastMove = mutableListOf<Pair<Int, Int>>()
+    protected var currentPlayer = if(startColour == CheckersColour.WHITE) {
         player1
     } else {
         player2
     }
 
-    private var currentColour = startColour
+    protected var currentColour = startColour
 
     val colour: CheckersColour
     get() = currentColour
@@ -26,8 +28,8 @@ class CheckersGame(val player1: Player, val player2: Player,
     val move: List<Pair<Int, Int>>
     get() = lastMove
 
-    private val allowFirstRandom = allowFirstRandom
-    private var randomUsed = 0
+    protected val allowFirstRandom = allowFirstRandom
+    protected var randomUsed = 0
 
     init {
         player1.colour = CheckersColour.WHITE
@@ -54,7 +56,7 @@ class CheckersGame(val player1: Player, val player2: Player,
         }
     }
 
-    fun oneMove() {
+    open fun oneMove() {
         val pieces = CheckersController.getPieces(board, currentColour)
         val captures = CheckersController.getCapturingPieces(board, pieces, currentColour)
         if(captures.first.isNotEmpty() || captures.second.isNotEmpty()) {
@@ -62,7 +64,7 @@ class CheckersGame(val player1: Player, val player2: Player,
             val queenCaptures = CheckersController.getPossibleQueenCaptures(board, captures.second, currentColour)
             val longestCaptures = CheckersController.getLongestCaptures(pawnCaptures, queenCaptures)
             val pos = if(allowFirstRandom and (randomUsed < 2)) {
-                randomUsed += 1
+                randomUsed = min(randomUsed + 1, 2)
                 currentPlayer.capture(longestCaptures, board, true)
             } else {
                 currentPlayer.capture(longestCaptures, board, false)
