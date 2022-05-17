@@ -565,10 +565,13 @@ class CheckersController {
                 }
                 s += " ${i + 1}"
                 if(i == 0 && player1 != null) {
-                    s += "  ${Colour.FG.WHITE}${player1.name} ${board.whiteCount}${Colour.END}"
+                    s += "  ${Colour.FG.WHITE}${player1.name} ${board.whiteCount}  Idle: ${board.idleWhiteMoves}${Colour.END} "
                 }
                 if(i == 1 && player2 != null) {
-                    s += "  ${Colour.FG.BLACK}${player2.name} ${board.blackCount}${Colour.END}"
+                    s += "  ${Colour.FG.BLACK}${player2.name} ${board.blackCount}   Idle: ${board.idleBlackMoves}${Colour.END}"
+                }
+                if(i == 2) {
+                    s += "  Idle moves limit: ${board.idleMoves}"
                 }
                 println(s)
             }

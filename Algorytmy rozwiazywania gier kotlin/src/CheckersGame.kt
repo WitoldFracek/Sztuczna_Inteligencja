@@ -1,4 +1,6 @@
-class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, startColour: CheckersColour = CheckersColour.WHITE) {
+class CheckersGame(val player1: Player, val player2: Player,
+                   pawnRows: Int, startColour: CheckersColour = CheckersColour.WHITE,
+                    allowFirstRandom: Boolean = false) {
     var board = Board(pawnRows)
     private var lastMove = mutableListOf<Pair<Int, Int>>()
     private var currentPlayer = if(startColour == CheckersColour.WHITE) {
@@ -6,7 +8,26 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
     } else {
         player2
     }
+
     private var currentColour = startColour
+
+    val colour: CheckersColour
+    get() = currentColour
+
+    val player: Player
+    get() = currentPlayer
+
+    val playerOne: Player
+    get() = player1
+
+    val playerTwo: Player
+    get() = player2
+
+    val move: List<Pair<Int, Int>>
+    get() = lastMove
+
+    private val allowFirstRandom = allowFirstRandom
+    private var randomUsed = 0
 
     init {
         player1.colour = CheckersColour.WHITE
@@ -40,7 +61,13 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
             val pawnCaptures = CheckersController.getPossiblePawnCaptures(board, captures.first, currentColour)
             val queenCaptures = CheckersController.getPossibleQueenCaptures(board, captures.second, currentColour)
             val longestCaptures = CheckersController.getLongestCaptures(pawnCaptures, queenCaptures)
-            val pos = currentPlayer.capture(longestCaptures, board)
+            val pos = if(allowFirstRandom and (randomUsed < 2)) {
+                randomUsed += 1
+                currentPlayer.capture(longestCaptures, board, true)
+            } else {
+                currentPlayer.capture(longestCaptures, board, false)
+            }
+            //val pos = currentPlayer.capture(longestCaptures, board)
             val playerChoice = longestCaptures[pos]
             lastMove = playerChoice.map{ it.startPair }.toMutableList()
             lastMove.add(playerChoice[playerChoice.size - 1].endPair)
@@ -52,7 +79,12 @@ class CheckersGame(val player1: Player, val player2: Player, pawnRows: Int, star
             val allMoves = mutableListOf<Move>()
             allMoves.addAll(pawnMoves)
             allMoves.addAll(queenMoves)
-            val pos = currentPlayer.move(allMoves, board)
+            val pos = if(allowFirstRandom and (randomUsed < 2)) {
+                randomUsed += 1
+                currentPlayer.move(allMoves, board, true)
+            } else {
+                currentPlayer.move(allMoves, board, false)
+            }
             val playerChoice = allMoves[pos]
             lastMove = mutableListOf()
             lastMove.add(playerChoice.startPair)

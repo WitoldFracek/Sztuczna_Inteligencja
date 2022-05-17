@@ -26,11 +26,11 @@ open class Player(open val name: String = "${Player::class.simpleName}") {
 
     lateinit var colour: CheckersColour
 
-    open fun move(possibleMoves: List<Move>, board: Board): Int {
+    open fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         return 0
     }
 
-    open fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+    open fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         return 0
     }
 
@@ -40,7 +40,7 @@ open class Player(open val name: String = "${Player::class.simpleName}") {
 }
 
 class Human(name: String): Player(name) {
-    override fun move(possibleMoves: List<Move>, board: Board): Int {
+    override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         println("${Colour.colour(153, 255, 51)}${name} moves:${Colour.END}")
         for((i, move) in possibleMoves.withIndex()){
             val start = CheckersController.aliasFromCoordinates(move.xStart, move.yStart)
@@ -50,7 +50,7 @@ class Human(name: String): Player(name) {
         return getCorrectInput(possibleMoves)
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         println("${Colour.colour(153, 255, 51)}${name} moves:${Colour.END}")
         for((i, jumps) in possibleCaptures.withIndex()) {
             val startJump = jumps[0]
@@ -70,11 +70,11 @@ class DummyBot(name: String=""): Player(name) {
 
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
-    override fun move(possibleMoves: List<Move>, board: Board): Int {
+    override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         return (Math.random() * possibleMoves.size).toInt()
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         return (Math.random() * possibleCaptures.size).toInt()
     }
 
@@ -97,9 +97,12 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
 
     constructor(estimator: Estimator, searchDepth: Int=3): this("", searchDepth, estimator)
 
-    override fun move(possibleMoves: List<Move>, board: Board): Int {
+    override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         val bestMoves = mutableListOf<Int>()
         var bestEval = Int.MIN_VALUE
+        if(allowFirstRandom) {
+            return (Math.random() * possibleMoves.size).toInt()
+        }
         val startTime = currentTimeMillis()
         for((i, move) in possibleMoves.withIndex()) {
             var newBoard = board.copy()
@@ -115,13 +118,16 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
-        println("Best estimations for $colour is $bestEval")
+        println("Best estimation for $colour is $bestEval")
         return bestMoves[(Math.random() * bestMoves.size).toInt()]
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         val bestCaptures = mutableListOf<Int>()
         var bestEval = Int.MIN_VALUE
+        if(allowFirstRandom) {
+            return (Math.random() * possibleCaptures.size).toInt()
+        }
         val startTime = currentTimeMillis()
         for((i, captureList) in possibleCaptures.withIndex()) {
             var newBoard = board.copy()
@@ -137,7 +143,7 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Pla
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
-        println("Best estimations for $colour is $bestEval")
+        println("Best estimation for $colour is $bestEval")
         return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
     }
 
@@ -243,9 +249,12 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
 
     constructor(estimator: Estimator, searchDepth: Int=3): this("", searchDepth, estimator)
 
-    override fun move(possibleMoves: List<Move>, board: Board): Int {
+    override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         val bestMoves = mutableListOf<Int>()
         var bestEval = Int.MIN_VALUE
+        if(allowFirstRandom) {
+            return (Math.random() * possibleMoves.size).toInt()
+        }
         val startTime = currentTimeMillis()
         for((i, move) in possibleMoves.withIndex()) {
             var newBoard = board.copy()
@@ -261,13 +270,16 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
-        println("Best estimations for $colour is $bestEval")
+        println("Best estimation for $colour is $bestEval")
         return bestMoves[(Math.random() * bestMoves.size).toInt()]
     }
 
-    override fun capture(possibleCaptures: List<List<Jump>>, board: Board): Int {
+    override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         val bestCaptures = mutableListOf<Int>()
         var bestEval = Int.MIN_VALUE
+        if(allowFirstRandom) {
+            return (Math.random() * possibleCaptures.size).toInt()
+        }
         val startTime = currentTimeMillis()
         for((i, captureList) in possibleCaptures.withIndex()) {
             var newBoard = board.copy()
@@ -283,7 +295,7 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
         }
         val endTime = currentTimeMillis()
         println("Computed in ${(endTime - startTime) / 1000}s")
-        println("Best estimations for $colour is $bestEval")
+        println("Best estimation for $colour is $bestEval")
         return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
     }
 
@@ -401,19 +413,19 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
 
     companion object {
         private val NAMES = arrayOf(
-            "Niedorzeczny Bóbr",
-            "Zgryźliwa Żmija",
-            "Szybki Sebastian",
-            "Pijany Olek",
-            "Potężna Grochówka",
-            "Smutny Marek",
-            "Wesoły Romek"
+            "Monica",
+            "Yuri",
+            "Natsuki",
+            "Sayori",
+            "Zero Doubt",
+            "Crusher",
+            "Greek Philosopher"
         )
     }
 }
 
 fun main(args: Array<String>) {
     val h = Human("Witek")
-    h.move(arrayListOf(Move(0, 0, 1, 1)), Board())
-    h.capture(arrayListOf(arrayListOf(Jump(0, 0, 2, 2, 1, 1), Jump(2, 2, 4, 4, 3, 3))), Board())
+    h.move(arrayListOf(Move(0, 0, 1, 1)), Board(), false)
+    h.capture(arrayListOf(arrayListOf(Jump(0, 0, 2, 2, 1, 1), Jump(2, 2, 4, 4, 3, 3))), Board(), false)
 }

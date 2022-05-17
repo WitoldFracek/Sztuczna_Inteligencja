@@ -1,12 +1,12 @@
 import kotlin.math.max
 
-abstract class Estimator {
-    open operator fun invoke(board: Board, maximisingColour: CheckersColour, checkForEndgame: Boolean = false): Int {
+interface Estimator {
+    operator fun invoke(board: Board, maximisingColour: CheckersColour, checkForEndgame: Boolean = false): Int {
         return 0
     }
 }
 
-class CountEstimator(private val pawnWeight: Double = 1.0, private val queenWeight: Double = 3.0): Estimator() {
+class CountEstimator(private val pawnWeight: Double = 1.0, private val queenWeight: Double = 3.0): Estimator {
     override operator fun invoke(board: Board, maximisingColour: CheckersColour, checkForEndgame: Boolean): Int {
         if(checkForEndgame) {
             if(CheckersController.hasGameEnded(board, CheckersColour.WHITE)) {
@@ -45,7 +45,7 @@ class CountEstimator(private val pawnWeight: Double = 1.0, private val queenWeig
 class AreaEstimator(private val outerZone: Int = 3,
                     private val middleZone: Int = 2,
                     private val innerZone: Int = 1,
-                    private val queenWeight: Int = 3): Estimator() {
+                    private val queenWeight: Int = 3): Estimator {
     private val weights = getZoneWeighs()
 
     override fun invoke(board: Board, maximisingColour: CheckersColour, checkForEndgame: Boolean): Int {
