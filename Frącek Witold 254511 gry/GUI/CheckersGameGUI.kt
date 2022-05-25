@@ -63,7 +63,7 @@ class CheckersGameGUI(player1: Player,
     }
 
     private fun executeOneCycle() {
-        //CheckersController.printBoard(board, lastMove, player1, player2)
+        CheckersController.printBoard(board, lastMove, player1, player2)
         if(currentPlayer is Human) {
             humanMove()
             isLocked.set(false)

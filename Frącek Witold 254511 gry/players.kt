@@ -66,7 +66,7 @@ class Human(name: String): Player(name) {
     }
 }
 
-class DummyBot(name: String=""): Bot(name) {
+class DummyBot(name: String=""): Player(name) {
 
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
@@ -93,36 +93,24 @@ class DummyBot(name: String=""): Bot(name) {
 }
 
 abstract class Bot(name: String): Player(name) {
-    protected var nodeCount = 0
 }
 
 class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Bot(name) {
-
     override val name = if(name == "") { NAMES[(Math.random() * NAMES.size).toInt()] } else { name }
 
     constructor(estimator: Estimator, searchDepth: Int=3): this("", searchDepth, estimator)
 
     override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         val bestMoves = mutableListOf<Int>()
-        nodeCount = 0
         var bestEval = Int.MIN_VALUE
         if(allowFirstRandom) {
             return (Math.random() * possibleMoves.size).toInt()
         }
         val startTime = currentTimeMillis()
-        if(possibleMoves.size == 1) {
-            val endTime = currentTimeMillis()
-            println(colour)
-            println("Computed in:   ${(endTime - startTime)}")
-            println("Visited nodes: $nodeCount")
-            println()
-            return 0
-        }
         for((i, move) in possibleMoves.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeMove(newBoard, move)
             val eval = minmax(newBoard, searchDepth - 1, this.colour.oppositeColour(), false)
-            nodeCount += 1
             if(eval > bestEval) {
                 bestEval = eval
                 bestMoves.clear()
@@ -132,36 +120,22 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Bot
             }
         }
         val endTime = currentTimeMillis()
-        //println("Computed in:   ${(endTime - startTime) / 1000}s")
-        println(colour)
-        println("Computed in:   ${(endTime - startTime)}")
-        println("Visited nodes: $nodeCount")
-        println()
-//        println("Best estimation for $colour is $bestEval")
+        println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimation for $colour is $bestEval")
         return bestMoves[(Math.random() * bestMoves.size).toInt()]
     }
 
     override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         val bestCaptures = mutableListOf<Int>()
-        nodeCount = 0
         var bestEval = Int.MIN_VALUE
         if(allowFirstRandom) {
             return (Math.random() * possibleCaptures.size).toInt()
         }
         val startTime = currentTimeMillis()
-        if(possibleCaptures.size == 1) {
-            val endTime = currentTimeMillis()
-            println(colour)
-            println("Computed in:   ${(endTime - startTime)}")
-            println("Visited nodes: $nodeCount")
-            println()
-            return 0
-        }
         for((i, captureList) in possibleCaptures.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeCapture(newBoard, captureList)
             val eval = minmax(newBoard, searchDepth - 1, this.colour.oppositeColour(), false)
-            nodeCount += 1
             if(eval > bestEval) {
                 bestEval = eval
                 bestCaptures.clear()
@@ -171,17 +145,12 @@ class MinMaxBot(name:String, val searchDepth:Int, val estimator: Estimator): Bot
             }
         }
         val endTime = currentTimeMillis()
-        println(colour)
-        println("Computed in:   ${(endTime - startTime)}")
-        println("Visited nodes: $nodeCount")
-        println()
-//        println("Computed in ${(endTime - startTime) / 1000}s")
-//        println("Best estimation for $colour is $bestEval")
+        println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimation for $colour is $bestEval")
         return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
     }
 
     fun minmax(board: Board, depth: Int, currentColour: CheckersColour, maximising: Boolean): Int {
-        nodeCount += 1
         if(depth == 0) {
             return estimator(board, this.colour)
         }
@@ -285,25 +254,15 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
 
     override fun move(possibleMoves: List<Move>, board: Board, allowFirstRandom: Boolean): Int {
         val bestMoves = mutableListOf<Int>()
-        nodeCount = 0
         var bestEval = Int.MIN_VALUE
         if(allowFirstRandom) {
             return (Math.random() * possibleMoves.size).toInt()
         }
         val startTime = currentTimeMillis()
-        if(possibleMoves.size == 1) {
-            val endTime = currentTimeMillis()
-            println(colour)
-            println("Computed in:   ${(endTime - startTime)}")
-            println("Visited nodes: $nodeCount")
-            println()
-            return 0
-        }
         for((i, move) in possibleMoves.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeMove(newBoard, move)
             val eval = alphabeta(newBoard, searchDepth - 1, this.colour.oppositeColour(), false, Int.MIN_VALUE, Int.MAX_VALUE)
-            nodeCount += 1
             if(eval > bestEval) {
                 bestEval = eval
                 bestMoves.clear()
@@ -313,36 +272,22 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
             }
         }
         val endTime = currentTimeMillis()
-        println(colour)
-        println("Computed in:   ${(endTime - startTime)}")
-        println("Visited nodes: $nodeCount")
-        println()
-//        println("Computed in ${(endTime - startTime) / 1000}s")
-//        println("Best estimation for $colour is $bestEval")
+        println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimation for $colour is $bestEval")
         return bestMoves[(Math.random() * bestMoves.size).toInt()]
     }
 
     override fun capture(possibleCaptures: List<List<Jump>>, board: Board, allowFirstRandom: Boolean): Int {
         val bestCaptures = mutableListOf<Int>()
-        nodeCount = 0
         var bestEval = Int.MIN_VALUE
         if(allowFirstRandom) {
             return (Math.random() * possibleCaptures.size).toInt()
         }
         val startTime = currentTimeMillis()
-        if(possibleCaptures.size == 1) {
-            val endTime = currentTimeMillis()
-            println(colour)
-            println("Computed in:   ${(endTime - startTime)}")
-            println("Visited nodes: $nodeCount")
-            println()
-            return 0
-        }
         for((i, captureList) in possibleCaptures.withIndex()) {
             var newBoard = board.copy()
             newBoard = CheckersController.executeCapture(newBoard, captureList)
             val eval = alphabeta(newBoard, searchDepth - 1, this.colour.oppositeColour(), false, Int.MIN_VALUE, Int.MAX_VALUE)
-            nodeCount += 1
             if(eval > bestEval) {
                 bestEval = eval
                 bestCaptures.clear()
@@ -352,17 +297,12 @@ class AlphaBetaBot(name:String, val searchDepth:Int, val estimator: Estimator): 
             }
         }
         val endTime = currentTimeMillis()
-        println(colour)
-        println("Computed in:   ${(endTime - startTime)}")
-        println("Visited nodes: $nodeCount")
-        println()
-//        println("Computed in ${(endTime - startTime) / 1000}s")
-//        println("Best estimation for $colour is $bestEval")
+        println("Computed in ${(endTime - startTime) / 1000}s")
+        println("Best estimation for $colour is $bestEval")
         return bestCaptures[(Math.random() * bestCaptures.size).toInt()]
     }
 
     fun alphabeta(board: Board, depth: Int, currentColour: CheckersColour, maximising: Boolean, alpha: Int, beta: Int): Int {
-        nodeCount += 1
         if(depth == 0) {
             return estimator(board, this.colour)
         }
