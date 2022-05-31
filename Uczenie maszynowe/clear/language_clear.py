@@ -3,6 +3,7 @@ from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 
 PATH = '..\\data\\category_full_description.txt'
+SAVE_PATH = '..\\data\\category_cleared_description.txt'
 
 
 def remove_interpunction(description):
@@ -53,7 +54,7 @@ def get_clear_descriptions(path):
     ret = []
     with open(path, encoding='utf-8') as file:
         lines = file.readlines()
-    for line in lines:
+    for i, line in enumerate(lines):
         split = line.split('|')
         category = split[0]
         description = ' '.join(split[1:])
@@ -64,18 +65,35 @@ def get_clear_descriptions(path):
         words = to_basic_form(words)
         new_description = " ".join(words)
         ret.append((category, new_description))
+        if i % 100 == 1:
+            print(i / len(lines) * 100)
     return ret
 
 
-if __name__ == '__main__':
-    clear = get_clear_descriptions(PATH)
-    print(len(clear))
-    for cat, des in clear:
-        print(cat, ':', des)
+def save_clear_descriptions(path, save_path):
+    ret = []
+    with open(path, encoding='utf-8') as file:
+        lines = file.readlines()
+    with open(save_path, 'w+', encoding='utf-8') as file:
+        for i, line in enumerate(lines):
+            split = line.split('|')
+            category = split[0]
+            description = ' '.join(split[1:])
+            words = remove_interpunction(description)
+            words = remove_articles(words)
+            words = remove_pronounces(words)
+            words = remove_stop_words(words)
+            words = to_basic_form(words)
+            new_description = " ".join(words)
+            ret.append((category, new_description))
+            if i % 100 == 1:
+                print(i / len(lines) * 100)
+            line = f'{category}|{new_description}\n'
+            file.write(line)
 
-    # lemmatizer = WordNetLemmatizer()
-    # print(lemmatizer.lemmatize('car\'s', 'v'))
-    # print(lemmatizer.lemmatize('car\'s', 'n'))
+
+if __name__ == '__main__':
+    save_clear_descriptions(PATH, SAVE_PATH)
 
 
 
