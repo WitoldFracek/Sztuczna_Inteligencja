@@ -20,15 +20,17 @@ fun main(args: Array<String>) {
     val areaEstimator = AreaEstimator(3, 2, 1)
     val aggressiveEstimator = AggressiveAreaEstimator(listOf(6, 5), 3, 2, 1)
 
+    val human = Human(name="Dominik")
+
     // BOTS
     val dummyBot1 = DummyBot(name="Dummy")
     val dummyBot2 = DummyBot()
     val minMaxBot1 = MinMaxBot("MinMax", searchDepth=8, areaEstimator)
     val minMaxBot2 = MinMaxBot("", searchDepth=6, AreaEstimator(3, 2, 1))
-    val alphaBetaBot1 = AlphaBetaBot("AlfaBeta", searchDepth=8, areaEstimator)
+    val alphaBetaBot1 = AlphaBetaBot("AlfaBeta", searchDepth=7, areaEstimator)
     val alphaBetaBot2 = AlphaBetaBot("AlfaBeta", searchDepth=3, areaEstimator)
 
-    val game = CheckersGameGUI(minMaxBot1, alphaBetaBot1, pawnRows=3, allowFirstRandom=true, 70)
+    val game = CheckersGameGUI(human, alphaBetaBot1, pawnRows=3, allowFirstRandom=true, 70)
     println("OK")
     game.start()
     println("Finished")
