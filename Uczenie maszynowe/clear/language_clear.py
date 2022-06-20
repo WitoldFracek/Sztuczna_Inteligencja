@@ -3,7 +3,7 @@ from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 
 PATH = '..\\data\\category_full_description.txt'
-SAVE_PATH = '..\\data\\category_cleared_description.txt'
+SAVE_PATH = '..\\data\\category_cleared_description_with_stopwords.txt'
 
 
 def remove_interpunction(description):
@@ -15,7 +15,7 @@ def remove_interpunction(description):
 def remove_articles(words):
     ret = []
     for word in words:
-        if word not in ['the', 'a', 'at']:
+        if word not in ['the', 'a', 'an']:
             ret.append(word)
     return ret
 
@@ -59,10 +59,10 @@ def get_clear_descriptions(path):
         category = split[0]
         description = ' '.join(split[1:])
         words = remove_interpunction(description)
-        words = remove_articles(words)
-        words = remove_pronounces(words)
-        words = remove_stop_words(words)
-        words = to_basic_form(words)
+        #words = remove_articles(words)
+        #words = remove_pronounces(words)
+        #words = remove_stop_words(words)
+        #words = to_basic_form(words)
         new_description = " ".join(words)
         ret.append((category, new_description))
         if i % 100 == 1:
@@ -80,9 +80,9 @@ def save_clear_descriptions(path, save_path):
             category = split[0]
             description = ' '.join(split[1:])
             words = remove_interpunction(description)
-            words = remove_articles(words)
-            words = remove_pronounces(words)
-            words = remove_stop_words(words)
+            # words = remove_articles(words)
+            # words = remove_pronounces(words)
+            # words = remove_stop_words(words)
             words = to_basic_form(words)
             new_description = " ".join(words)
             ret.append((category, new_description))

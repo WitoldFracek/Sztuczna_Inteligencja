@@ -1,7 +1,7 @@
 
 
-PATH = '../data/category_cleared_description.txt'
-CSV_PATH = '../data/category_cleared_description.csv'
+PATH = '../data/category_cleared_description_with_stopwords.txt'
+CSV_PATH = '../data/category_cleared_description_with_stopwords.csv'
 ID_DICT = {
     "children's literature": 0,
     "science fiction": 1,
@@ -34,7 +34,6 @@ def has_numbers(word):
 
 
 def main():
-    print(has_numbers('propaganda1'))
     convert_to_csv(PATH, CSV_PATH)
 
 
