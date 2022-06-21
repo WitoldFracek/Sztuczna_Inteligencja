@@ -1,46 +1,67 @@
 import matplotlib.pyplot as pyl
 import seaborn as sns; sns.set()
-from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.pipeline import Pipeline
 import pandas as pd
-from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
-from sklearn.feature_selection import SelectFromModel
+from sklearn.model_selection import train_test_split, GridSearchCV
 import numpy as np
 from sklearn.metrics import confusion_matrix
-from sklearn.naive_bayes import GaussianNB, BernoulliNB, ComplementNB, CategoricalNB, MultinomialNB
-from sklearn.datasets import fetch_20newsgroups
+from datetime import datetime
+from sklearn import preprocessing
 
-from sklearn.svm import SVC
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
-
-
-def no_analyzer(doc):
-    return doc
+REPORT_PATH = '../reports/reports.txt'
 
 
-def train_model(pipeline, source_path):
+def train_model(pipeline: Pipeline, grid, source_path):
+    report_message = ''
+    training_start = datetime.now()
+    report_message += f'\n\nMODEL:   {pipeline["model"].__class__.__name__}\n'
+    report_message += f'Started at {training_start}\n\n'
     print('Fetching data...')
-    data_frame = pd.read_csv("../data/category_cleared_description.csv", encoding="utf-8", sep=';')
-    categories = np.array(data_frame.drop_duplicates('CATEGORY').sort_values('ID')['CATEGORY'].values)
+    data_frame = pd.read_csv(source_path, encoding="utf-8", sep=';')
+    categories = data_frame.drop_duplicates('CATEGORY').sort_values('ID')['CATEGORY'].values
     descriptions = np.array(data_frame['DESCRIPTION'].values)
-    split_descriptions = np.array([desc.split() for desc in descriptions], dtype=object)
-    category_ids = np.array([elem for elem in list(data_frame["ID"].values)], dtype=int)
-
-    #pipeline = make_pipeline(vectorizer, model)
-    pipeline = Pipeline(steps=[
-        #('select', SelectFromModel(model)),
-        ('vect', vectorizer),
-        ('tran', transformer),
-        ('model', model)
-    ])
+    category_ids = np.asarray([elem for elem in list(data_frame["ID"].values)], dtype=int)
+    step_end = datetime.now()
+    report_message += f'Fetching:'.ljust(20) + f'{(step_end - training_start).seconds} s\n'
 
     print("Splitting data...")
-    split = StratifiedShuffleSplit(n_splits=splits, test_size=0.3, random_state=0)
-    split.get_n_splits(descriptions, category_ids)
+    step_start = datetime.now()
     x_train, x_test, y_train, y_test = train_test_split(descriptions, category_ids, test_size=0.2, stratify=category_ids)
-    print("Fitting...")
+    step_end = datetime.now()
+    report_message += f'Splitting:'.ljust(20) + f'{(step_end - step_start).seconds} s\n'
 
-    fit_pipeline: Pipeline = pipeline.fit(x_train, y_train)
-    predictions = fit_pipeline.predict(x_test)
+    print("Checking the grid...")
+    step_start = datetime.now()
+    search = GridSearchCV(pipeline, grid, n_jobs=-1, verbose=2)
+    step_end = datetime.now()
+    report_message += f'Checking grid:'.ljust(20) + f'{(step_end - step_start).seconds} s\n'
+
+    print('Fitting data...')
+    step_start = datetime.now()
+    fitted: Pipeline = search.fit(x_train, y_train)
+    step_end = datetime.now()
+    report_message += f'Fitting:'.ljust(20) + f'{(step_end - step_start).seconds} s\n'
+
+    train_score = fitted.score(x_train, y_train)
+    print(f'Train score: {train_score}')
+    report_message += f'Train score:'.ljust(20) + f'{train_score}\n'
+
+    test_score = fitted.score(x_test, y_test)
+    print(f'Test score: {test_score}')
+    report_message += f'Test score:'.ljust(20) + f'{train_score}\n'
+
+    predictions = fitted.predict(x_test)
+
+    training_end = datetime.now()
+    report_message += f'Whole process:'.ljust(20) + f'{(training_end - training_start).seconds}s\n'
+    report_message += f'\nPARAMS:\n'
+
+    for key in search.cv_results_:
+        report_message += f'{key}: {search.cv_results_[key]}\n'
+
+    for key in search.best_params_:
+        obj, attr = key.split('__')[0], key.split('__')[1]
+        report_message += f'{obj} {attr}:'.ljust(30) + f'{search.best_params_[key]}\n'
 
     mat = confusion_matrix(y_test, predictions, normalize='true')
     sns.heatmap(mat.T, square=True, annot=True, fmt='f', cbar=False, xticklabels=categories, yticklabels=categories)
@@ -48,31 +69,7 @@ def train_model(pipeline, source_path):
     pyl.ylabel('predicted')
     pyl.show()
 
-    # twenty_train = fetch_20newsgroups(subset='train', shuffle=True)
-    #
-    # x_train_v = vectorizer.fit_transform(x_train)
-    # x_train_t = transformer.fit_transform(x_train_v)
-    # print(type(twenty_train.target))
-    # print(type(y_train))
-    # model.fit(x_train_t, y_train)
-    # print(x_train_v.shape)
-    # x_train_t = transformer.fit_transform(x_train_v)
-    # print(x_train_t.shape)
-
-    # clf = model.fit(x_train, y_train)
-    # selector = SelectFromModel(estimator=clf)
-    # x_train_v = vectorizer.transform(x_train)
-    # print(x_train_v.shape)
-    # x_train_t = transformer.transform(x_train_v)
-    # print(x_train_t.shape)
-    # predicted = clf.predict(x_test)
-
-    # y_train_v = vectorizer.fit_transform(y_train)
-    # pipeline.fit(x_train_v, y_train_v)
-    # predictions = pipeline.predict()
-
-
-if __name__ == '__main__':
-    train_model(MultinomialNB(), CountVectorizer(), TfidfTransformer())
+    with open(REPORT_PATH, 'a', encoding='utf-8') as file:
+        file.write(report_message)
 
 
