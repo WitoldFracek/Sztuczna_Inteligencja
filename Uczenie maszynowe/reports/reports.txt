@@ -1005,3 +1005,149 @@ select k:                     3000
 transformer sublinear_tf:     True
 vectorizer max_df:            0.75
 vectorizer ngram_range:       (1, 2)
+
+
+---------- SPEED TESTS -----------------------------------------------------------------------------------
+
+MODEL:   MultinomialNB
+Started at 2022-06-21 12:53:35.087041
+
+Fetching:           0 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            61 s
+Train score:        0.9995901639344262
+Test score:         0.9995901639344262
+Whole process:      73s
+
+PARAMS:
+mean_fit_time: [21.52771788]
+std_fit_time: [4.02850091]
+mean_score_time: [2.46367235]
+std_score_time: [0.56581229]
+param_model__alpha: [0.01]
+param_select__k: ['all']
+param_transformer__sublinear_tf: [False]
+param_vectorizer__max_df: [0.5]
+param_vectorizer__ngram_range: [(1, 2)]
+params: [{'model__alpha': 0.01, 'select__k': 'all', 'transformer__sublinear_tf': False, 'vectorizer__max_df': 0.5, 'vectorizer__ngram_range': (1, 2)}]
+split0_test_score: [0.7329235]
+split1_test_score: [0.72745902]
+split2_test_score: [0.72814208]
+split3_test_score: [0.75068306]
+split4_test_score: [0.72472678]
+mean_test_score: [0.73278689]
+std_test_score: [0.00932971]
+rank_test_score: [1]
+model alpha:                  0.01
+select k:                     all
+transformer sublinear_tf:     False
+vectorizer max_df:            0.5
+vectorizer ngram_range:       (1, 2)
+
+
+MODEL:   SVC
+Started at 2022-06-21 12:54:49.292822
+
+Fetching:           0 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            180 s
+Train score:        0.8599726775956285
+Test score:         0.8599726775956285
+Whole process:      234s
+
+PARAMS:
+mean_fit_time: [57.83189611]
+std_fit_time: [7.87703789]
+mean_score_time: [10.19053125]
+std_score_time: [1.98136007]
+param_model__C: [0.9]
+param_model__degree: [2]
+param_model__kernel: ['poly']
+param_select__k: [3000]
+param_transformer__sublinear_tf: [True]
+param_vectorizer__max_df: [0.5]
+param_vectorizer__ngram_range: [(1, 2)]
+params: [{'model__C': 0.9, 'model__degree': 2, 'model__kernel': 'poly', 'select__k': 3000, 'transformer__sublinear_tf': True, 'vectorizer__max_df': 0.5, 'vectorizer__ngram_range': (1, 2)}]
+split0_test_score: [0.72472678]
+split1_test_score: [0.73838798]
+split2_test_score: [0.72472678]
+split3_test_score: [0.70218579]
+split4_test_score: [0.70628415]
+mean_test_score: [0.7192623]
+std_test_score: [0.01330828]
+rank_test_score: [1]
+model C:                      0.9
+model degree:                 2
+model kernel:                 poly
+select k:                     3000
+transformer sublinear_tf:     True
+vectorizer max_df:            0.5
+vectorizer ngram_range:       (1, 2)
+
+---- TIME ALL -----------
+
+
+MODEL:   MultinomialNB
+Started at 2022-06-21 13:25:54.941286
+
+Fetching:           0 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            58 s
+Train score:        0.9997267759562841
+Test score:         0.7475409836065574
+Whole process:      68s
+
+PARAMS:
+Mean score:                   [0.73224044]
+Mean fit time:                [20.09852867]
+
+
+MODEL:   SVC
+Started at 2022-06-21 13:27:04.597963
+
+Fetching:           0 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            180 s
+Train score:        0.8612021857923498
+Test score:         0.7306010928961748
+Whole process:      233s
+
+PARAMS:
+Mean score:                   [0.71980874]
+Mean fit time:                [61.48226266]
+
+
+MODEL:   MultinomialNB
+Started at 2022-06-21 13:30:59.126525
+
+Fetching:           1 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            64 s
+Train score:        0.9995901639344262
+Test score:         0.7366120218579235
+Whole process:      85s
+
+PARAMS:
+Mean score:                   [0.74166667]
+Mean fit time:                [22.60258875]
+
+
+MODEL:   SVC
+Started at 2022-06-21 13:32:25.108632
+
+Fetching:           0 s
+Splitting:          0 s
+Checking grid:      0 s
+Fitting:            188 s
+Train score:        0.860655737704918
+Test score:         0.7142076502732241
+Whole process:      258s
+
+PARAMS:
+Mean score:                   [0.69125683]
+Mean fit time:                [58.2973217]

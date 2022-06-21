@@ -48,7 +48,7 @@ def train_model(pipeline: Pipeline, grid, source_path):
 
     test_score = fitted.score(x_test, y_test)
     print(f'Test score: {test_score}')
-    report_message += f'Test score:'.ljust(20) + f'{train_score}\n'
+    report_message += f'Test score:'.ljust(20) + f'{test_score}\n'
 
     predictions = fitted.predict(x_test)
 
@@ -56,12 +56,15 @@ def train_model(pipeline: Pipeline, grid, source_path):
     report_message += f'Whole process:'.ljust(20) + f'{(training_end - training_start).seconds}s\n'
     report_message += f'\nPARAMS:\n'
 
-    for key in search.cv_results_:
-        report_message += f'{key}: {search.cv_results_[key]}\n'
+    # for key in search.cv_results_:
+    #     report_message += f'{key}: {search.cv_results_[key]}\n'
 
-    for key in search.best_params_:
-        obj, attr = key.split('__')[0], key.split('__')[1]
-        report_message += f'{obj} {attr}:'.ljust(30) + f'{search.best_params_[key]}\n'
+    report_message += f'Mean score:'.ljust(30) + f'{search.cv_results_["mean_test_score"]}\n'
+    report_message += f'Mean fit time:'.ljust(30) + f'{search.cv_results_["mean_fit_time"]}\n'
+
+    # for key in search.best_params_:
+    #     obj, attr = key.split('__')[0], key.split('__')[1]
+    #     report_message += f'{obj} {attr}:'.ljust(30) + f'{search.best_params_[key]}\n'
 
     mat = confusion_matrix(y_test, predictions, normalize='true')
     sns.heatmap(mat.T, square=True, annot=True, fmt='f', cbar=False, xticklabels=categories, yticklabels=categories)
